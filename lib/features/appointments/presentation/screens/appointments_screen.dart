@@ -55,6 +55,7 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen> {
 
     return AppScaffold(
       title: 'Appointments',
+      showBottomNavigation: true,
       actions: [
         IconButton(
           tooltip: 'Book appointment',

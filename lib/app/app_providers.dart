@@ -16,10 +16,18 @@ import '../features/appointments/data/appointments_api_service.dart';
 import '../features/appointments/data/appointments_repository_impl.dart';
 import '../features/appointments/domain/repositories/appointments_repository.dart';
 import '../features/appointments/presentation/controllers/appointments_controller.dart';
+import '../features/checkin/data/checkin_api_service.dart';
+import '../features/checkin/data/checkin_repository_impl.dart';
+import '../features/checkin/domain/repositories/checkin_repository.dart';
+import '../features/checkin/presentation/controllers/checkin_controller.dart';
 import '../features/profile/data/profile_api_service.dart';
 import '../features/profile/data/profile_repository_impl.dart';
 import '../features/profile/domain/repositories/profile_repository.dart';
 import '../features/profile/presentation/controllers/profile_controller.dart';
+import '../features/queue/data/queue_api_service.dart';
+import '../features/queue/data/queue_repository_impl.dart';
+import '../features/queue/domain/repositories/queue_repository.dart';
+import '../features/queue/presentation/controllers/queue_controller.dart';
 import 'app_router.dart';
 
 final secureStorageProvider = Provider<SecureStorageService>(
@@ -90,6 +98,26 @@ final profileControllerProvider =
       return ProfileController(
         repository: ref.watch(profileRepositoryProvider),
       );
+    });
+
+final checkinRepositoryProvider = Provider<CheckinRepository>((ref) {
+  return CheckinRepositoryImpl(CheckinApiService(ref.watch(apiClientProvider)));
+});
+
+final checkinControllerProvider =
+    StateNotifierProvider<CheckinController, CheckinState>((ref) {
+      return CheckinController(
+        repository: ref.watch(checkinRepositoryProvider),
+      );
+    });
+
+final queueRepositoryProvider = Provider<QueueRepository>((ref) {
+  return QueueRepositoryImpl(QueueApiService(ref.watch(apiClientProvider)));
+});
+
+final queueControllerProvider =
+    StateNotifierProvider<QueueController, QueueState>((ref) {
+      return QueueController(repository: ref.watch(queueRepositoryProvider));
     });
 
 final appRouterRefreshProvider = Provider<AppRouterRefreshNotifier>((ref) {

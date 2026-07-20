@@ -10,6 +10,7 @@ class NotificationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const AppScaffold(
       title: 'Notifications',
+      showBottomNavigation: true,
       body: AppEmptyState(
         title: 'Patient notifications',
         message:

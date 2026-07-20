@@ -7,6 +7,7 @@ class ApiEndpoints {
   static const facilities = _FacilityEndpoints();
   static const checkins = _CheckinEndpoints();
   static const queue = _QueueEndpoints();
+  static const intelligence = _IntelligenceEndpoints();
   static const notifications = _NotificationEndpoints();
 }
 
@@ -50,6 +51,9 @@ class _CheckinEndpoints {
   String get base => '/checkins/';
   String get tokenIssue => '/checkins/tokens/issue/';
   String get tokenConsume => '/checkins/tokens/consume/';
+  String get tokens => '/checkins/tokens/';
+  String get appointment => '/checkins/appointment/';
+  String detail(String id) => '/checkins/$id/';
 }
 
 class _QueueEndpoints {
@@ -57,6 +61,15 @@ class _QueueEndpoints {
 
   String get entries => '/queueing/entries/';
   String get queues => '/queueing/queues/';
+  String detail(String id) => '/queueing/entries/$id/';
+  String events(String id) => '/queueing/entries/$id/events/';
+}
+
+class _IntelligenceEndpoints {
+  const _IntelligenceEndpoints();
+
+  String latestPrediction(String queueEntryId) =>
+      '/intelligence/queue-entries/$queueEntryId/latest-prediction/';
 }
 
 class _NotificationEndpoints {

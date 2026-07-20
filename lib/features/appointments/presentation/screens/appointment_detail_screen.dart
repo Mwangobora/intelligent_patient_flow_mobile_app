@@ -43,6 +43,7 @@ class _AppointmentDetailScreenState
 
     return AppScaffold(
       title: 'Appointment Detail',
+      showBottomNavigation: true,
       body: state.isLoading
           ? const AppLoadingState(message: 'Loading appointment...')
           : state.errorMessage != null
@@ -135,14 +136,16 @@ class _AppointmentDetailScreenState
                     ],
                   ),
                 const SizedBox(height: AppSizes.lg),
-                const AppCard(
+                AppCard(
                   child: ListTile(
                     contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.qr_code_2, color: AppColors.info),
-                    title: Text('Check-in'),
-                    subtitle: Text(
-                      'QR check-in will be added in a later module.',
+                    leading: const Icon(Icons.qr_code_2, color: AppColors.info),
+                    title: const Text('Check-in'),
+                    subtitle: const Text(
+                      'View QR check-in and arrival instructions.',
                     ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.go('/checkin/${appointment.id}'),
                   ),
                 ),
                 const SizedBox(height: AppSizes.lg),

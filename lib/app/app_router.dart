@@ -83,10 +83,20 @@ GoRouter createAppRouter({
           rescheduleAppointmentId: state.pathParameters['id'],
         ),
       ),
-      GoRoute(path: '/queue', builder: (context, state) => const QueueScreen()),
       GoRoute(
         path: '/checkin',
         builder: (context, state) => const CheckinScreen(),
+      ),
+      GoRoute(
+        path: '/checkin/:appointmentId',
+        builder: (context, state) =>
+            CheckinScreen(appointmentId: state.pathParameters['appointmentId']),
+      ),
+      GoRoute(path: '/queue', builder: (context, state) => const QueueScreen()),
+      GoRoute(
+        path: '/queue/:queueEntryId',
+        builder: (context, state) =>
+            QueueScreen(queueEntryId: state.pathParameters['queueEntryId']),
       ),
       GoRoute(
         path: '/notifications',

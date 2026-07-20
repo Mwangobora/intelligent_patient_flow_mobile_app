@@ -57,6 +57,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return AppScaffold(
       title: 'Patient Home',
+      showBottomNavigation: true,
       actions: [
         IconButton(
           tooltip: 'Logout',
@@ -106,10 +107,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   icon: Icons.calendar_month_outlined,
                   onTap: () => context.go('/appointments'),
                 ),
-                const _QuickAction(
+                _QuickAction(
                   label: 'Check-in',
                   icon: Icons.qr_code_scanner,
-                  isEnabled: false,
+                  onTap: () => context.go('/checkin'),
                 ),
                 const _QuickAction(
                   label: 'Notifications',
@@ -119,7 +120,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
             const SizedBox(height: AppSizes.lg),
-            const _PlaceholderCard(),
+            _PlaceholderCard(onTap: () => context.go('/queue')),
           ],
         ],
       ),
@@ -238,16 +239,20 @@ class _QuickAction extends StatelessWidget {
 }
 
 class _PlaceholderCard extends StatelessWidget {
-  const _PlaceholderCard();
+  const _PlaceholderCard({required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return const AppCard(
+    return AppCard(
       child: ListTile(
         contentPadding: EdgeInsets.zero,
-        leading: Icon(Icons.format_list_numbered, color: AppColors.info),
-        title: Text('Queue status'),
-        subtitle: Text('Queue status will be connected in the next module.'),
+        leading: const Icon(Icons.format_list_numbered, color: AppColors.info),
+        title: const Text('Queue status'),
+        subtitle: const Text('View your current queue number and status.'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
       ),
     );
   }

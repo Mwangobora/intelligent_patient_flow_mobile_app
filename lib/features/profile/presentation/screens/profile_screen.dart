@@ -46,6 +46,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (user == null) {
       return const AppScaffold(
         title: 'Profile',
+        showBottomNavigation: true,
         body: AppErrorState(
           message: 'Please sign in again to view your profile.',
         ),
@@ -54,6 +55,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return AppScaffold(
       title: 'Profile',
+      showBottomNavigation: true,
       actions: [
         IconButton(
           tooltip: 'Logout',

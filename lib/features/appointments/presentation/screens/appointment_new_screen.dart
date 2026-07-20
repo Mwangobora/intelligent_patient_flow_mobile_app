@@ -80,6 +80,7 @@ class _AppointmentNewScreenState extends ConsumerState<AppointmentNewScreen> {
 
     return AppScaffold(
       title: widget.isReschedule ? 'Reschedule' : 'Book Appointment',
+      showBottomNavigation: true,
       body: profileState.isLoading
           ? const AppLoadingState(message: 'Loading patient profile...')
           : patient == null
