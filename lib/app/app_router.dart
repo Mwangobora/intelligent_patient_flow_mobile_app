@@ -1,0 +1,63 @@
+import 'package:go_router/go_router.dart';
+
+import '../features/appointments/presentation/screens/appointment_detail_screen.dart';
+import '../features/appointments/presentation/screens/appointment_new_screen.dart';
+import '../features/appointments/presentation/screens/appointments_screen.dart';
+import '../features/auth/presentation/screens/login_screen.dart';
+import '../features/auth/presentation/screens/onboarding_screen.dart';
+import '../features/auth/presentation/screens/register_screen.dart';
+import '../features/auth/presentation/screens/splash_screen.dart';
+import '../features/checkin/presentation/screens/checkin_screen.dart';
+import '../features/notifications/presentation/screens/notifications_screen.dart';
+import '../features/profile/presentation/screens/profile_screen.dart';
+import '../features/queue/presentation/screens/queue_screen.dart';
+import 'home_screen.dart';
+
+GoRouter createAppRouter() {
+  return GoRouter(
+    initialLocation: '/splash',
+    routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+      GoRoute(
+        path: '/appointments',
+        builder: (context, state) => const AppointmentsScreen(),
+      ),
+      GoRoute(
+        path: '/appointments/new',
+        builder: (context, state) => const AppointmentNewScreen(),
+      ),
+      GoRoute(
+        path: '/appointments/:id',
+        builder: (context, state) => AppointmentDetailScreen(
+          appointmentId: state.pathParameters['id'] ?? '',
+        ),
+      ),
+      GoRoute(path: '/queue', builder: (context, state) => const QueueScreen()),
+      GoRoute(
+        path: '/checkin',
+        builder: (context, state) => const CheckinScreen(),
+      ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
+      ),
+    ],
+  );
+}
