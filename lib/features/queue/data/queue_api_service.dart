@@ -8,53 +8,22 @@ class QueueApiService {
 
   final ApiClient _apiClient;
 
-  Future<List<QueueEntry>> listQueueEntries({
-    String? patientId,
-    String? patientCheckinId,
-    bool? activeOnly,
-  }) async {
-    final queryParameters = <String, String>{};
-    if (patientId != null) {
-      queryParameters['patient_id'] = patientId;
-    }
-    if (patientCheckinId != null) {
-      queryParameters['patient_checkin_id'] = patientCheckinId;
-    }
-    if (activeOnly != null) {
-      queryParameters['active_only'] = activeOnly.toString();
-    }
-
-    final response = await _apiClient.dio.get<dynamic>(
-      ApiEndpoints.queue.entries,
-      queryParameters: queryParameters,
-    );
-    return asJsonList(
-      response.data,
-    ).whereType<Map<String, dynamic>>().map(QueueEntry.fromJson).toList();
-  }
-
-  Future<QueueEntry> getQueueEntry(String id) async {
+  Future<QueueEntry?> getCurrentQueue() async {
     final response = await _apiClient.dio.get<Map<String, dynamic>>(
-      ApiEndpoints.queue.detail(id),
+      ApiEndpoints.queue.patientCurrent,
     );
-    return QueueEntry.fromJson(response.data ?? <String, dynamic>{});
+    final data = response.data ?? <String, dynamic>{};
+    if (data['queue_entry_id'] == null) return null;
+    return QueueEntry.fromPatientJson(data);
   }
 
-  Future<List<QueueEntryEvent>> listEvents(String queueEntryId) async {
+  Future<List<QueueEntry>> listQueueHistory() async {
     final response = await _apiClient.dio.get<dynamic>(
-      ApiEndpoints.queue.events(queueEntryId),
+      ApiEndpoints.queue.patientHistory,
     );
-    return asJsonList(
-      response.data,
-    ).whereType<Map<String, dynamic>>().map(QueueEntryEvent.fromJson).toList();
-  }
-
-  Future<WaitTimePrediction?> getLatestPrediction(String queueEntryId) async {
-    final response = await _apiClient.dio.get<Map<String, dynamic>>(
-      ApiEndpoints.intelligence.latestPrediction(queueEntryId),
-    );
-    final data = response.data;
-    if (data == null || data.isEmpty) return null;
-    return WaitTimePrediction.fromJson(data);
+    return asJsonList(response.data)
+        .whereType<Map<String, dynamic>>()
+        .map(QueueEntry.fromPatientJson)
+        .toList();
   }
 }

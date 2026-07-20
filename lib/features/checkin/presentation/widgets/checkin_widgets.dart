@@ -63,14 +63,18 @@ class CheckinStateCard extends StatelessWidget {
   const CheckinStateCard({
     required this.appointment,
     required this.checkin,
+    required this.canCheckIn,
     required this.isActionLoading,
     required this.onCheckInNow,
     required this.onIssueQr,
+    this.blockReason,
     super.key,
   });
 
   final Appointment appointment;
   final PatientCheckin? checkin;
+  final bool canCheckIn;
+  final String? blockReason;
   final bool isActionLoading;
   final VoidCallback onCheckInNow;
   final VoidCallback onIssueQr;
@@ -106,6 +110,14 @@ class CheckinStateCard extends StatelessWidget {
             ),
           ],
         ),
+      );
+    }
+    if (!canCheckIn) {
+      return _InstructionCard(
+        icon: Icons.lock_clock_outlined,
+        title: 'Check-in is not open yet',
+        message: _blockReasonText(blockReason),
+        color: AppColors.warning,
       );
     }
     return AppCard(
@@ -145,6 +157,21 @@ class CheckinStateCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _blockReasonText(String? reason) {
+  return switch (reason) {
+    'too_early' =>
+      'Check-in is not open yet. Please try again closer to your appointment time.',
+    'too_late' =>
+      'This appointment check-in window has closed. Please contact reception.',
+    'already_checked_in' => 'You are already checked in for this appointment.',
+    'appointment_cancelled' ||
+    'appointment_completed' ||
+    'appointment_no_show' ||
+    'appointment_rescheduled' => 'This appointment cannot be checked in.',
+    _ => 'Please contact reception if you need help with this appointment.',
+  };
 }
 
 class CheckinQrCard extends StatelessWidget {

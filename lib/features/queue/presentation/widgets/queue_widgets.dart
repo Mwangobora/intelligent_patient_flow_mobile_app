@@ -10,13 +10,11 @@ import '../../data/models/queue_models.dart';
 class QueueStatusCard extends StatelessWidget {
   const QueueStatusCard({
     required this.entry,
-    required this.prediction,
     required this.lastUpdatedAt,
     super.key,
   });
 
   final QueueEntry entry;
-  final WaitTimePrediction? prediction;
   final DateTime? lastUpdatedAt;
 
   @override
@@ -41,7 +39,7 @@ class QueueStatusCard extends StatelessWidget {
           const SizedBox(height: AppSizes.sm),
           Text(_nextInstruction(entry), textAlign: TextAlign.center),
           const SizedBox(height: AppSizes.lg),
-          _QueueInfoGrid(entry: entry, prediction: prediction),
+          _QueueInfoGrid(entry: entry),
           if (lastUpdatedAt != null) ...[
             const SizedBox(height: AppSizes.md),
             Text(
@@ -55,33 +53,33 @@ class QueueStatusCard extends StatelessWidget {
   }
 }
 
-class QueueEventTimeline extends StatelessWidget {
-  const QueueEventTimeline({required this.events, super.key});
+class QueueHistoryList extends StatelessWidget {
+  const QueueHistoryList({required this.entries, super.key});
 
-  final List<QueueEntryEvent> events;
+  final List<QueueEntry> entries;
 
   @override
   Widget build(BuildContext context) {
-    if (events.isEmpty) {
+    if (entries.isEmpty) {
       return const AppCard(child: Text('No queue history is available yet.'));
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: events
+      children: entries
           .map(
-            (event) => Padding(
+            (entry) => Padding(
               padding: const EdgeInsets.only(bottom: AppSizes.sm),
               child: AppCard(
                 child: ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Icon(
-                    _eventIcon(event.eventType),
+                    _historyIcon(entry.status),
                     color: AppColors.primaryTeal,
                   ),
-                  title: Text(_eventLabel(event.eventType)),
+                  title: Text(entry.displayQueueNumber),
                   subtitle: Text(
-                    '${DateFormatter.readableDateTime(event.occurredAt)}'
-                    '${event.reason == null ? '' : '\n${event.reason}'}',
+                    '${_statusText(entry.status)}'
+                    '\nJoined ${DateFormatter.readableDateTime(entry.joinedAt)}',
                   ),
                 ),
               ),
@@ -93,20 +91,24 @@ class QueueEventTimeline extends StatelessWidget {
 }
 
 class _QueueInfoGrid extends StatelessWidget {
-  const _QueueInfoGrid({required this.entry, required this.prediction});
+  const _QueueInfoGrid({required this.entry});
 
   final QueueEntry entry;
-  final WaitTimePrediction? prediction;
 
   @override
   Widget build(BuildContext context) {
     final items = [
       _InfoItem('Service point', entry.servicePointName ?? 'Not available'),
       _InfoItem('People ahead', entry.queuePosition?.toString() ?? '—'),
-      _InfoItem('Priority', _priorityLabel(entry.priorityLevel)),
+      _InfoItem(
+        'Priority',
+        entry.priorityLabel ?? _priorityLabel(entry.priorityLevel),
+      ),
       _InfoItem(
         'Estimated wait',
-        prediction == null ? '—' : '${prediction!.predictedWaitMinutes} min',
+        entry.estimatedWaitMinutes == null
+            ? '—'
+            : '${entry.estimatedWaitMinutes} min',
       ),
     ];
     return GridView.count(
@@ -205,25 +207,13 @@ String _priorityLabel(int priority) {
   };
 }
 
-String _eventLabel(String eventType) {
-  return eventType
-      .split('_')
-      .map(
-        (part) => part.isEmpty
-            ? part
-            : '${part[0].toUpperCase()}${part.substring(1)}',
-      )
-      .join(' ');
-}
-
-IconData _eventIcon(String eventType) {
-  return switch (eventType) {
-    'called' || 'recalled' => Icons.notifications_active_outlined,
-    'service_started' => Icons.play_circle_outline,
-    'service_completed' => Icons.check_circle_outline,
-    'cancelled' => Icons.cancel_outlined,
-    'transferred' => Icons.arrow_forward,
-    'priority_changed' => Icons.priority_high,
+IconData _historyIcon(String status) {
+  return switch (status) {
+    QueueEntryStatus.called => Icons.notifications_active_outlined,
+    QueueEntryStatus.inService => Icons.play_circle_outline,
+    QueueEntryStatus.completed => Icons.check_circle_outline,
+    QueueEntryStatus.cancelled => Icons.cancel_outlined,
+    QueueEntryStatus.transferred => Icons.arrow_forward,
     _ => Icons.history,
   };
 }

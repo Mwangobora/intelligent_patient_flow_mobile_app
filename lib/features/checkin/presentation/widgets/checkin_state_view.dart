@@ -52,6 +52,8 @@ class CheckinContent extends StatelessWidget {
         CheckinStateCard(
           appointment: appointment,
           checkin: checkinState.activeCheckin,
+          canCheckIn: checkinState.canCheckIn,
+          blockReason: checkinState.blockReason,
           isActionLoading: checkinState.isActionLoading,
           onCheckInNow: onCheckInNow,
           onIssueQr: onIssueQr,

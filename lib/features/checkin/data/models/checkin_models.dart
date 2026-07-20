@@ -59,6 +59,87 @@ class PatientCheckin {
   }
 }
 
+class CheckinEligibility {
+  const CheckinEligibility({
+    required this.appointmentId,
+    required this.canCheckIn,
+    required this.appointmentStatus,
+    required this.scheduledStart,
+    required this.scheduledEnd,
+    required this.hasActiveToken,
+    this.reason,
+    this.facility,
+    this.specialty,
+    this.department,
+    this.existingCheckin,
+    this.tokenExpiresAt,
+  });
+
+  final String appointmentId;
+  final bool canCheckIn;
+  final String? reason;
+  final String appointmentStatus;
+  final DateTime scheduledStart;
+  final DateTime scheduledEnd;
+  final Map<String, dynamic>? facility;
+  final Map<String, dynamic>? specialty;
+  final Map<String, dynamic>? department;
+  final PatientCheckin? existingCheckin;
+  final bool hasActiveToken;
+  final DateTime? tokenExpiresAt;
+
+  factory CheckinEligibility.fromJson(Map<String, dynamic> json) {
+    final existing = json['existing_checkin'];
+    return CheckinEligibility(
+      appointmentId: json['appointment_id'] as String? ?? '',
+      canCheckIn: parseBool(json['can_check_in']),
+      reason: json['reason'] as String?,
+      appointmentStatus: json['appointment_status'] as String? ?? '',
+      scheduledStart: DateTime.parse(json['scheduled_start'] as String),
+      scheduledEnd: DateTime.parse(json['scheduled_end'] as String),
+      facility: _mapOrNull(json['facility']),
+      specialty: _mapOrNull(json['specialty']),
+      department: _mapOrNull(json['department']),
+      existingCheckin: existing is Map<String, dynamic>
+          ? PatientCheckin.fromJson({
+              'id': existing['id'],
+              'facility': json['facility'] is Map<String, dynamic>
+                  ? (json['facility'] as Map<String, dynamic>)['id']
+                  : null,
+              'patient': '',
+              'appointment': json['appointment_id'],
+              'checkin_method': existing['checkin_method'],
+              'checked_in_at': existing['checked_in_at'],
+            })
+          : null,
+      hasActiveToken: parseBool(json['has_active_token']),
+      tokenExpiresAt: parseOptionalDateTime(json['token_expires_at']),
+    );
+  }
+}
+
+class AppointmentCheckinResult {
+  const AppointmentCheckinResult({
+    required this.checkin,
+    required this.message,
+    this.queueEntry,
+  });
+
+  final PatientCheckin checkin;
+  final Map<String, dynamic>? queueEntry;
+  final String message;
+
+  factory AppointmentCheckinResult.fromJson(Map<String, dynamic> json) {
+    return AppointmentCheckinResult(
+      checkin: PatientCheckin.fromJson(
+        json['checkin'] as Map<String, dynamic>? ?? <String, dynamic>{},
+      ),
+      queueEntry: _mapOrNull(json['queue_entry']),
+      message: json['message'] as String? ?? 'Check-in successful.',
+    );
+  }
+}
+
 class CheckinToken {
   const CheckinToken({
     required this.id,
@@ -105,4 +186,9 @@ class CheckinToken {
       rawToken: json['raw_token'] as String?,
     );
   }
+}
+
+Map<String, dynamic>? _mapOrNull(Object? value) {
+  if (value is Map<String, dynamic>) return value;
+  return null;
 }

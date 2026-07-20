@@ -28,8 +28,12 @@ class QueueEntry {
     this.servicePointCode,
     this.servicePointName,
     this.facilityId,
+    this.facilityName,
     this.appointmentId,
     this.queuePosition,
+    this.estimatedWaitMinutes,
+    this.priorityLabel,
+    this.lastUpdatedAt,
     this.calledAt,
     this.serviceStartedAt,
     this.serviceCompletedAt,
@@ -42,14 +46,18 @@ class QueueEntry {
   final String? servicePointCode;
   final String? servicePointName;
   final String? facilityId;
+  final String? facilityName;
   final String patientCheckinId;
   final String? appointmentId;
   final int sequenceNumber;
   final String displayQueueNumber;
   final int? queuePosition;
+  final int? estimatedWaitMinutes;
+  final String? priorityLabel;
   final int priorityLevel;
   final String status;
   final DateTime joinedAt;
+  final DateTime? lastUpdatedAt;
   final DateTime? calledAt;
   final DateTime? serviceStartedAt;
   final DateTime? serviceCompletedAt;
@@ -65,6 +73,7 @@ class QueueEntry {
       servicePointCode: json['service_point_code'] as String?,
       servicePointName: json['service_point_name'] as String?,
       facilityId: json['facility'] as String?,
+      facilityName: json['facility_name'] as String?,
       patientCheckinId: json['patient_checkin'] as String? ?? '',
       appointmentId: json['appointment'] as String?,
       sequenceNumber: parseInt(json['sequence_number']),
@@ -72,12 +81,47 @@ class QueueEntry {
           json['display_queue_number'] as String? ??
           '${json['service_point_code'] ?? 'Q'}-${parseInt(json['sequence_number']).toString().padLeft(3, '0')}',
       queuePosition: parseNullableInt(json['queue_position']),
+      estimatedWaitMinutes: parseNullableInt(json['estimated_wait_minutes']),
+      priorityLabel: json['priority_label'] as String?,
       priorityLevel: parseInt(json['priority_level']),
       status: json['status'] as String? ?? QueueEntryStatus.waiting,
       joinedAt: DateTime.parse(json['joined_at'] as String),
+      lastUpdatedAt: parseOptionalDateTime(json['last_updated_at']),
       calledAt: parseOptionalDateTime(json['called_at']),
       serviceStartedAt: parseOptionalDateTime(json['service_started_at']),
       serviceCompletedAt: parseOptionalDateTime(json['service_completed_at']),
+      cancelledAt: parseOptionalDateTime(json['cancelled_at']),
+    );
+  }
+
+  factory QueueEntry.fromPatientJson(Map<String, dynamic> json) {
+    final servicePoint = _mapOrNull(json['service_point']);
+    final facility = _mapOrNull(json['facility']);
+    return QueueEntry(
+      id: json['queue_entry_id'] as String? ?? '',
+      queueId: json['queue_id'] as String? ?? '',
+      queueStatus: json['queue_status'] as String?,
+      servicePointCode: servicePoint?['code'] as String?,
+      servicePointName:
+          servicePoint?['name'] as String? ?? json['queue_name'] as String?,
+      facilityId: facility?['id'] as String?,
+      facilityName: facility?['name'] as String?,
+      patientCheckinId: '',
+      appointmentId: json['appointment_id'] as String?,
+      sequenceNumber: 0,
+      displayQueueNumber: json['queue_number'] as String? ?? '',
+      queuePosition: parseNullableInt(json['people_ahead']),
+      estimatedWaitMinutes: parseNullableInt(json['estimated_wait_minutes']),
+      priorityLabel: json['priority_label'] as String?,
+      priorityLevel: _priorityLevelFromLabel(json['priority_label'] as String?),
+      status: json['status'] as String? ?? QueueEntryStatus.waiting,
+      joinedAt:
+          parseOptionalDateTime(json['joined_at']) ??
+          DateTime.fromMillisecondsSinceEpoch(0),
+      lastUpdatedAt: parseOptionalDateTime(json['last_updated_at']),
+      calledAt: parseOptionalDateTime(json['called_at']),
+      serviceStartedAt: parseOptionalDateTime(json['service_started_at']),
+      serviceCompletedAt: parseOptionalDateTime(json['completed_at']),
       cancelledAt: parseOptionalDateTime(json['cancelled_at']),
     );
   }
@@ -139,4 +183,18 @@ class WaitTimePrediction {
       generatedAt: DateTime.parse(json['generated_at'] as String),
     );
   }
+}
+
+Map<String, dynamic>? _mapOrNull(Object? value) {
+  if (value is Map<String, dynamic>) return value;
+  return null;
+}
+
+int _priorityLevelFromLabel(String? label) {
+  return switch (label?.toLowerCase()) {
+    'priority' => 1,
+    'urgent' => 2,
+    'emergency' => 3,
+    _ => 0,
+  };
 }

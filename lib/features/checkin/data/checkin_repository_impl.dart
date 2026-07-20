@@ -10,39 +10,23 @@ class CheckinRepositoryImpl implements CheckinRepository {
   final CheckinApiService _apiService;
 
   @override
-  Future<ApiResult<List<PatientCheckin>>> listCheckins({
-    String? patientId,
-    String? appointmentId,
-    bool? isVoided,
-  }) async {
+  Future<ApiResult<CheckinEligibility>> getEligibility(
+    String appointmentId,
+  ) async {
     try {
-      return ApiResult.success(
-        await _apiService.listCheckins(
-          patientId: patientId,
-          appointmentId: appointmentId,
-          isVoided: isVoided,
-        ),
-      );
+      return ApiResult.success(await _apiService.getEligibility(appointmentId));
     } catch (error) {
       return ApiResult.failure(ErrorMapper.fromObject(error).message);
     }
   }
 
   @override
-  Future<ApiResult<PatientCheckin>> createAppointmentCheckin({
-    required String facilityId,
-    required String patientId,
-    required String appointmentId,
-    String? facilitySpecialtyId,
-  }) async {
+  Future<ApiResult<AppointmentCheckinResult>> checkInAppointment(
+    String appointmentId,
+  ) async {
     try {
       return ApiResult.success(
-        await _apiService.createAppointmentCheckin(
-          facilityId: facilityId,
-          patientId: patientId,
-          appointmentId: appointmentId,
-          facilitySpecialtyId: facilitySpecialtyId,
-        ),
+        await _apiService.checkInAppointment(appointmentId),
       );
     } catch (error) {
       return ApiResult.failure(ErrorMapper.fromObject(error).message);
@@ -51,28 +35,8 @@ class CheckinRepositoryImpl implements CheckinRepository {
 
   @override
   Future<ApiResult<CheckinToken>> issueToken(String appointmentId) async {
-    try {
-      return ApiResult.success(await _apiService.issueToken(appointmentId));
-    } catch (error) {
-      return ApiResult.failure(ErrorMapper.fromObject(error).message);
-    }
-  }
-
-  @override
-  Future<ApiResult<List<CheckinToken>>> listTokens(String appointmentId) async {
-    try {
-      return ApiResult.success(await _apiService.listTokens(appointmentId));
-    } catch (error) {
-      return ApiResult.failure(ErrorMapper.fromObject(error).message);
-    }
-  }
-
-  @override
-  Future<ApiResult<PatientCheckin>> consumeToken(String rawToken) async {
-    try {
-      return ApiResult.success(await _apiService.consumeToken(rawToken));
-    } catch (error) {
-      return ApiResult.failure(ErrorMapper.fromObject(error).message);
-    }
+    return const ApiResult.failure(
+      'Patient QR token generation endpoint is not available yet.',
+    );
   }
 }

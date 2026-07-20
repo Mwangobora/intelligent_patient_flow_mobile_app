@@ -8,6 +8,7 @@ import '../../domain/repositories/checkin_repository.dart';
 class CheckinState {
   const CheckinState({
     this.appointment,
+    this.eligibility,
     this.checkins = const [],
     this.tokens = const [],
     this.issuedToken,
@@ -18,6 +19,7 @@ class CheckinState {
   });
 
   final Appointment? appointment;
+  final CheckinEligibility? eligibility;
   final List<PatientCheckin> checkins;
   final List<CheckinToken> tokens;
   final CheckinToken? issuedToken;
@@ -27,6 +29,9 @@ class CheckinState {
   final String? errorMessage;
 
   PatientCheckin? get activeCheckin {
+    if (eligibility?.existingCheckin != null) {
+      return eligibility!.existingCheckin;
+    }
     final active = checkins.where((checkin) => !checkin.isVoided).toList();
     return active.isEmpty ? null : active.first;
   }
@@ -37,9 +42,12 @@ class CheckinState {
   }
 
   bool get isCheckedIn => activeCheckin != null;
+  bool get canCheckIn => eligibility?.canCheckIn ?? !isCheckedIn;
+  String? get blockReason => eligibility?.reason;
 
   CheckinState copyWith({
     Appointment? appointment,
+    CheckinEligibility? eligibility,
     List<PatientCheckin>? checkins,
     List<CheckinToken>? tokens,
     CheckinToken? issuedToken,
@@ -52,6 +60,7 @@ class CheckinState {
   }) {
     return CheckinState(
       appointment: appointment ?? this.appointment,
+      eligibility: eligibility ?? this.eligibility,
       checkins: checkins ?? this.checkins,
       tokens: tokens ?? this.tokens,
       issuedToken: clearIssuedToken ? null : issuedToken ?? this.issuedToken,
@@ -77,60 +86,43 @@ class CheckinController extends StateNotifier<CheckinState> {
       clearMessages: true,
       clearIssuedToken: true,
     );
-    final checkinsResult = await repository.listCheckins(
-      appointmentId: appointment.id,
-      isVoided: false,
-    );
-    final tokensResult = await repository.listTokens(appointment.id);
-
-    final checkins = checkinsResult is ApiSuccess<List<PatientCheckin>>
-        ? checkinsResult.data
-        : <PatientCheckin>[];
-    final tokens = tokensResult is ApiSuccess<List<CheckinToken>>
-        ? tokensResult.data
-        : <CheckinToken>[];
-    final error = checkinsResult is ApiFailure<List<PatientCheckin>>
-        ? checkinsResult.message
-        : null;
-
-    state = state.copyWith(
-      checkins: checkins,
-      tokens: tokens,
-      isLoading: false,
-      errorMessage: error,
-    );
-  }
-
-  Future<void> loadForPatient(String patientId) async {
-    state = state.copyWith(isLoading: true, clearMessages: true);
-    final result = await repository.listCheckins(
-      patientId: patientId,
-      isVoided: false,
-    );
+    final result = await repository.getEligibility(appointment.id);
     switch (result) {
-      case ApiSuccess(data: final checkins):
-        state = state.copyWith(checkins: checkins, isLoading: false);
+      case ApiSuccess(data: final eligibility):
+        state = state.copyWith(
+          eligibility: eligibility,
+          checkins: [
+            if (eligibility.existingCheckin != null)
+              eligibility.existingCheckin!,
+          ],
+          isLoading: false,
+        );
       case ApiFailure(message: final message):
-        state = state.copyWith(isLoading: false, errorMessage: message);
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: _friendlyCheckinError(message),
+        );
     }
   }
 
   Future<bool> checkInNow() async {
     final appointment = state.appointment;
     if (appointment == null) return false;
+    if (!state.canCheckIn) {
+      state = state.copyWith(
+        errorMessage: _friendlyBlockReason(state.blockReason),
+        clearMessages: false,
+      );
+      return false;
+    }
     state = state.copyWith(isActionLoading: true, clearMessages: true);
-    final result = await repository.createAppointmentCheckin(
-      facilityId: appointment.facilityId,
-      patientId: appointment.patientId,
-      appointmentId: appointment.id,
-      facilitySpecialtyId: appointment.facilitySpecialtyId,
-    );
+    final result = await repository.checkInAppointment(appointment.id);
     switch (result) {
-      case ApiSuccess(data: final checkin):
+      case ApiSuccess(data: final checkinResult):
         state = state.copyWith(
-          checkins: [checkin, ...state.checkins],
+          checkins: [checkinResult.checkin, ...state.checkins],
           isActionLoading: false,
-          successMessage: 'Check-in successful.',
+          successMessage: checkinResult.message,
         );
         return true;
       case ApiFailure(message: final message):
@@ -182,5 +174,19 @@ class CheckinController extends StateNotifier<CheckinState> {
       return 'Could not connect to the server. Please try again.';
     }
     return 'Check-in failed. Please try again or contact reception.';
+  }
+
+  String _friendlyBlockReason(String? reason) {
+    return switch (reason) {
+      'too_early' => 'You cannot check in for this appointment yet.',
+      'too_late' => 'This appointment check-in window has closed.',
+      'already_checked_in' =>
+        'You are already checked in for this appointment.',
+      'appointment_cancelled' ||
+      'appointment_completed' ||
+      'appointment_no_show' ||
+      'appointment_rescheduled' => 'This appointment cannot be checked in.',
+      _ => 'Check-in failed. Please try again or contact reception.',
+    };
   }
 }

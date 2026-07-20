@@ -22,7 +22,6 @@ class QueueScreen extends ConsumerStatefulWidget {
 
 class _QueueScreenState extends ConsumerState<QueueScreen> {
   Timer? _pollTimer;
-  String? _loadedPatientId;
 
   @override
   void initState() {
@@ -42,20 +41,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final profileState = ref.watch(profileControllerProvider);
     final state = ref.watch(queueControllerProvider);
-    final patient = profileState.patientProfiles.isEmpty
-        ? null
-        : profileState.patientProfiles.first;
-
-    if (patient != null &&
-        widget.queueEntryId == null &&
-        _loadedPatientId != patient.id) {
-      _loadedPatientId = patient.id;
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _loadPatientQueue(patient.id),
-      );
-    }
 
     final entry = state.selectedEntry ?? state.currentEntry;
 
@@ -69,18 +55,12 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
           onPressed: () => _refresh(),
         ),
       ],
-      body: profileState.isLoading || state.isLoading
+      body: state.isLoading
           ? const AppLoadingState(message: 'Loading queue status...')
           : state.errorMessage != null
           ? AppErrorState(
               message: state.errorMessage!,
               onRetry: () => _refresh(),
-            )
-          : patient == null && widget.queueEntryId == null
-          ? const AppEmptyState(
-              title: 'Patient profile unavailable',
-              message:
-                  'A linked patient profile is required to view queue status.',
             )
           : RefreshIndicator(
               onRefresh: () => _refresh(),
@@ -97,7 +77,6 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                   else ...[
                     QueueStatusCard(
                       entry: entry,
-                      prediction: state.prediction,
                       lastUpdatedAt: state.lastUpdatedAt,
                     ),
                     const SizedBox(height: AppSizes.lg),
@@ -106,7 +85,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: AppSizes.md),
-                    QueueEventTimeline(events: state.events),
+                    QueueHistoryList(entries: state.entries),
                   ],
                 ],
               ),
@@ -115,36 +94,16 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
   }
 
   void _initialLoad() {
-    final user = ref.read(authControllerProvider).user;
-    if (user != null &&
-        ref.read(profileControllerProvider).patientProfiles.isEmpty) {
-      ref
-          .read(profileControllerProvider.notifier)
-          .loadLinkedPatientProfiles(user.id);
-    }
-    final entryId = widget.queueEntryId;
-    if (entryId != null) {
-      ref.read(queueControllerProvider.notifier).loadEntry(entryId);
-    }
+    ref.read(queueControllerProvider.notifier).loadCurrentQueue();
   }
 
   Future<void> _refresh({bool quiet = false}) async {
-    final entryId = widget.queueEntryId;
-    if (entryId != null) {
-      await ref
-          .read(queueControllerProvider.notifier)
-          .loadEntry(entryId, quiet: quiet);
-      return;
-    }
-    final profiles = ref.read(profileControllerProvider).patientProfiles;
-    if (profiles.isNotEmpty) {
-      await _loadPatientQueue(profiles.first.id, quiet: quiet);
-    }
+    await _loadCurrentQueue(quiet: quiet);
   }
 
-  Future<void> _loadPatientQueue(String patientId, {bool quiet = false}) async {
+  Future<void> _loadCurrentQueue({bool quiet = false}) async {
     await ref
         .read(queueControllerProvider.notifier)
-        .loadPatientQueue(patientId, quiet: quiet);
+        .loadCurrentQueue(quiet: quiet);
   }
 }

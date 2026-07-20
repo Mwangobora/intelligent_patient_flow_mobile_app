@@ -48,21 +48,16 @@ class _FacilityEndpoints {
 class _CheckinEndpoints {
   const _CheckinEndpoints();
 
-  String get base => '/checkins/';
-  String get tokenIssue => '/checkins/tokens/issue/';
-  String get tokenConsume => '/checkins/tokens/consume/';
-  String get tokens => '/checkins/tokens/';
-  String get appointment => '/checkins/appointment/';
-  String detail(String id) => '/checkins/$id/';
+  String get patientEligibility => '/patient/checkins/eligibility/';
+  String patientAppointmentCheckin(String appointmentId) =>
+      '/patient/checkins/appointments/$appointmentId/check-in/';
 }
 
 class _QueueEndpoints {
   const _QueueEndpoints();
 
-  String get entries => '/queueing/entries/';
-  String get queues => '/queueing/queues/';
-  String detail(String id) => '/queueing/entries/$id/';
-  String events(String id) => '/queueing/entries/$id/events/';
+  String get patientCurrent => '/patient/queue/current/';
+  String get patientHistory => '/patient/queue/history/';
 }
 
 class _IntelligenceEndpoints {

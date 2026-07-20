@@ -8,8 +8,6 @@ class QueueState {
   const QueueState({
     this.entries = const [],
     this.selectedEntry,
-    this.events = const [],
-    this.prediction,
     this.lastUpdatedAt,
     this.isLoading = false,
     this.errorMessage,
@@ -17,8 +15,6 @@ class QueueState {
 
   final List<QueueEntry> entries;
   final QueueEntry? selectedEntry;
-  final List<QueueEntryEvent> events;
-  final WaitTimePrediction? prediction;
   final DateTime? lastUpdatedAt;
   final bool isLoading;
   final String? errorMessage;
@@ -33,9 +29,6 @@ class QueueState {
   QueueState copyWith({
     List<QueueEntry>? entries,
     QueueEntry? selectedEntry,
-    List<QueueEntryEvent>? events,
-    WaitTimePrediction? prediction,
-    bool clearPrediction = false,
     DateTime? lastUpdatedAt,
     bool? isLoading,
     String? errorMessage,
@@ -44,8 +37,6 @@ class QueueState {
     return QueueState(
       entries: entries ?? this.entries,
       selectedEntry: selectedEntry ?? this.selectedEntry,
-      events: events ?? this.events,
-      prediction: clearPrediction ? null : prediction ?? this.prediction,
       lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
@@ -58,79 +49,26 @@ class QueueController extends StateNotifier<QueueState> {
 
   final QueueRepository repository;
 
-  Future<void> loadPatientQueue(String patientId, {bool quiet = false}) async {
+  Future<void> loadCurrentQueue({bool quiet = false}) async {
     if (!quiet) state = state.copyWith(isLoading: true, clearError: true);
-    final result = await repository.listQueueEntries(
-      patientId: patientId,
-      activeOnly: true,
-    );
-    switch (result) {
-      case ApiSuccess(data: final entries):
-        final current = entries.isEmpty ? null : _latestActive(entries);
+    final currentResult = await repository.getCurrentQueue();
+    final historyResult = await repository.listQueueHistory();
+    switch (currentResult) {
+      case ApiSuccess(data: final current):
         state = state.copyWith(
-          entries: entries,
+          entries: historyResult is ApiSuccess<List<QueueEntry>>
+              ? historyResult.data
+              : state.entries,
           selectedEntry: current,
           lastUpdatedAt: DateTime.now(),
           isLoading: false,
           clearError: true,
         );
-        if (current != null) {
-          await _loadEvents(current.id);
-          await _loadPrediction(current.id);
-        }
       case ApiFailure(message: final message):
         state = state.copyWith(
           isLoading: false,
           errorMessage: _friendlyQueueError(message),
         );
-    }
-  }
-
-  Future<void> loadEntry(String queueEntryId, {bool quiet = false}) async {
-    if (!quiet) state = state.copyWith(isLoading: true, clearError: true);
-    final entryResult = await repository.getQueueEntry(queueEntryId);
-    switch (entryResult) {
-      case ApiSuccess(data: final entry):
-        final eventsResult = await repository.listEvents(queueEntryId);
-        state = state.copyWith(
-          selectedEntry: entry,
-          events: eventsResult is ApiSuccess<List<QueueEntryEvent>>
-              ? eventsResult.data
-              : state.events,
-          lastUpdatedAt: DateTime.now(),
-          isLoading: false,
-          clearError: true,
-        );
-        await _loadPrediction(queueEntryId);
-      case ApiFailure(message: final message):
-        state = state.copyWith(
-          isLoading: false,
-          errorMessage: _friendlyQueueError(message),
-        );
-    }
-  }
-
-  QueueEntry _latestActive(List<QueueEntry> entries) {
-    final active = entries.where((entry) => entry.isActive).toList();
-    final source = active.isEmpty ? entries : active;
-    source.sort((a, b) => b.joinedAt.compareTo(a.joinedAt));
-    return source.first;
-  }
-
-  Future<void> _loadPrediction(String queueEntryId) async {
-    final result = await repository.getLatestPrediction(queueEntryId);
-    if (result is ApiSuccess<WaitTimePrediction?>) {
-      state = state.copyWith(
-        prediction: result.data,
-        clearPrediction: result.data == null,
-      );
-    }
-  }
-
-  Future<void> _loadEvents(String queueEntryId) async {
-    final result = await repository.listEvents(queueEntryId);
-    if (result is ApiSuccess<List<QueueEntryEvent>>) {
-      state = state.copyWith(events: result.data);
     }
   }
 
