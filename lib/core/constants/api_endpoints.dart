@@ -51,6 +51,9 @@ class _CheckinEndpoints {
   String get patientEligibility => '/patient/checkins/eligibility/';
   String patientAppointmentCheckin(String appointmentId) =>
       '/patient/checkins/appointments/$appointmentId/check-in/';
+  String patientQrToken(String appointmentId) =>
+      '/patient/checkins/appointments/$appointmentId/qr-token/';
+  String get patientQrConsume => '/patient/checkins/qr/consume/';
 }
 
 class _QueueEndpoints {

@@ -18,6 +18,7 @@ class CheckinContent extends StatelessWidget {
     required this.onRetry,
     required this.onCheckInNow,
     required this.onIssueQr,
+    required this.onScanQr,
     this.errorMessage,
     this.successMessage,
     super.key,
@@ -31,6 +32,7 @@ class CheckinContent extends StatelessWidget {
   final VoidCallback onRetry;
   final VoidCallback onCheckInNow;
   final VoidCallback onIssueQr;
+  final VoidCallback onScanQr;
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +59,7 @@ class CheckinContent extends StatelessWidget {
           isActionLoading: checkinState.isActionLoading,
           onCheckInNow: onCheckInNow,
           onIssueQr: onIssueQr,
+          onScanQr: onScanQr,
         ),
         if (checkinState.activeToken != null) ...[
           const SizedBox(height: AppSizes.lg),

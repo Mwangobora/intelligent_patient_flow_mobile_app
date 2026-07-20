@@ -157,6 +157,30 @@ class CheckinController extends StateNotifier<CheckinState> {
     }
   }
 
+  Future<bool> consumeQrToken(String token) async {
+    if (token.trim().isEmpty) {
+      state = state.copyWith(errorMessage: 'This QR code is not valid.');
+      return false;
+    }
+    state = state.copyWith(isActionLoading: true, clearMessages: true);
+    final result = await repository.consumeQrToken(token.trim());
+    switch (result) {
+      case ApiSuccess(data: final checkinResult):
+        state = state.copyWith(
+          checkins: [checkinResult.checkin, ...state.checkins],
+          isActionLoading: false,
+          successMessage: checkinResult.message,
+        );
+        return true;
+      case ApiFailure(message: final message):
+        state = state.copyWith(
+          isActionLoading: false,
+          errorMessage: _friendlyQrError(message),
+        );
+        return false;
+    }
+  }
+
   String _friendlyCheckinError(String message) {
     final normalized = message.toLowerCase();
     if (normalized.contains('too early') || normalized.contains('not open')) {
@@ -174,6 +198,23 @@ class CheckinController extends StateNotifier<CheckinState> {
       return 'Could not connect to the server. Please try again.';
     }
     return 'Check-in failed. Please try again or contact reception.';
+  }
+
+  String _friendlyQrError(String message) {
+    final normalized = message.toLowerCase();
+    if (normalized.contains('expired')) return 'This QR code has expired.';
+    if (normalized.contains('already') || normalized.contains('used')) {
+      return 'This QR code has already been used.';
+    }
+    if (normalized.contains('does not belong') ||
+        normalized.contains('permission') ||
+        normalized.contains('403')) {
+      return 'This QR code does not belong to your account.';
+    }
+    if (normalized.contains('connect') || normalized.contains('server')) {
+      return 'Could not connect to the server. Please try again.';
+    }
+    return 'This QR code is not valid.';
   }
 
   String _friendlyBlockReason(String? reason) {

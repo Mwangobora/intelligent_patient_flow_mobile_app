@@ -67,6 +67,7 @@ class CheckinStateCard extends StatelessWidget {
     required this.isActionLoading,
     required this.onCheckInNow,
     required this.onIssueQr,
+    required this.onScanQr,
     this.blockReason,
     super.key,
   });
@@ -78,6 +79,7 @@ class CheckinStateCard extends StatelessWidget {
   final bool isActionLoading;
   final VoidCallback onCheckInNow;
   final VoidCallback onIssueQr;
+  final VoidCallback onScanQr;
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +133,7 @@ class CheckinStateCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSizes.sm),
           const Text(
-            'Use mobile check-in when you arrive, or show your QR code to hospital staff.',
+            'Use mobile check-in, show your appointment QR code, or scan a hospital check-in QR code.',
           ),
           const SizedBox(height: AppSizes.lg),
           Row(
@@ -148,10 +150,19 @@ class CheckinStateCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: isActionLoading ? null : onIssueQr,
                   icon: const Icon(Icons.qr_code_2),
-                  label: const Text('Show QR'),
+                  label: const Text('Show My QR'),
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: AppSizes.md),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: isActionLoading ? null : onScanQr,
+              icon: const Icon(Icons.qr_code_scanner),
+              label: const Text('Scan QR Code'),
+            ),
           ),
         ],
       ),

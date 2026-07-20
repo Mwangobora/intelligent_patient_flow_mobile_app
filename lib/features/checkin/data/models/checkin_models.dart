@@ -174,7 +174,10 @@ class CheckinToken {
   factory CheckinToken.fromJson(Map<String, dynamic> json) {
     return CheckinToken(
       id: json['id'] as String? ?? '',
-      appointmentId: json['appointment'] as String? ?? '',
+      appointmentId:
+          json['appointment'] as String? ??
+          json['appointment_id'] as String? ??
+          '',
       appointmentNumber: json['appointment_number'] as String?,
       patientNumber: json['patient_number'] as String?,
       facilityName: json['facility_name'] as String?,

@@ -35,8 +35,21 @@ class CheckinRepositoryImpl implements CheckinRepository {
 
   @override
   Future<ApiResult<CheckinToken>> issueToken(String appointmentId) async {
-    return const ApiResult.failure(
-      'Patient QR token generation endpoint is not available yet.',
-    );
+    try {
+      return ApiResult.success(await _apiService.issueToken(appointmentId));
+    } catch (error) {
+      return ApiResult.failure(ErrorMapper.fromObject(error).message);
+    }
+  }
+
+  @override
+  Future<ApiResult<AppointmentCheckinResult>> consumeQrToken(
+    String token,
+  ) async {
+    try {
+      return ApiResult.success(await _apiService.consumeQrToken(token));
+    } catch (error) {
+      return ApiResult.failure(ErrorMapper.fromObject(error).message);
+    }
   }
 }

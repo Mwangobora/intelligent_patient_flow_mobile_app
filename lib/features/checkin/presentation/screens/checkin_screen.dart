@@ -106,6 +106,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                   .loadForAppointment(appointment),
               onCheckInNow: () => _confirmMobileCheckin(appointment),
               onIssueQr: () => _issueQrToken(),
+              onScanQr: () => context.go('/checkin/scan'),
             ),
     );
   }

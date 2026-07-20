@@ -25,4 +25,21 @@ class CheckinApiService {
       response.data ?? <String, dynamic>{},
     );
   }
+
+  Future<CheckinToken> issueToken(String appointmentId) async {
+    final response = await _apiClient.dio.post<Map<String, dynamic>>(
+      ApiEndpoints.checkins.patientQrToken(appointmentId),
+    );
+    return CheckinToken.fromJson(response.data ?? <String, dynamic>{});
+  }
+
+  Future<AppointmentCheckinResult> consumeQrToken(String token) async {
+    final response = await _apiClient.dio.post<Map<String, dynamic>>(
+      ApiEndpoints.checkins.patientQrConsume,
+      data: {'token': token},
+    );
+    return AppointmentCheckinResult.fromJson(
+      response.data ?? <String, dynamic>{},
+    );
+  }
 }

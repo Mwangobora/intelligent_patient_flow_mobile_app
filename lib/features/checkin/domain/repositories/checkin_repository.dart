@@ -9,4 +9,6 @@ abstract interface class CheckinRepository {
   );
 
   Future<ApiResult<CheckinToken>> issueToken(String appointmentId);
+
+  Future<ApiResult<AppointmentCheckinResult>> consumeQrToken(String token);
 }

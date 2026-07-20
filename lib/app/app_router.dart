@@ -9,6 +9,7 @@ import '../features/auth/presentation/screens/onboarding_screen.dart';
 import '../features/auth/presentation/screens/register_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
 import '../features/checkin/presentation/screens/checkin_screen.dart';
+import '../features/checkin/presentation/screens/checkin_scan_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/notifications/presentation/screens/notifications_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
@@ -86,6 +87,10 @@ GoRouter createAppRouter({
       GoRoute(
         path: '/checkin',
         builder: (context, state) => const CheckinScreen(),
+      ),
+      GoRoute(
+        path: '/checkin/scan',
+        builder: (context, state) => const CheckinScanScreen(),
       ),
       GoRoute(
         path: '/checkin/:appointmentId',
