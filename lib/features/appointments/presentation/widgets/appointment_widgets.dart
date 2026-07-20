@@ -25,15 +25,7 @@ class AppointmentCard extends StatelessWidget {
           '${DateFormatter.readableDateTime(appointment.scheduledStart)}',
         ),
         isThreeLine: true,
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            AppointmentStatusBadge(status: appointment.status),
-            const SizedBox(height: 6),
-            const Icon(Icons.chevron_right),
-          ],
-        ),
+        trailing: const Icon(Icons.chevron_right),
         onTap: () => context.go('/appointments/${appointment.id}'),
       ),
     );

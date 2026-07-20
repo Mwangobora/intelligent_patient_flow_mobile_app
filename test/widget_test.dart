@@ -29,7 +29,7 @@ void main() {
 class _FakeAuthRepository implements AuthRepository {
   @override
   Future<ApiResult<AuthUser>> currentUser() async {
-    return const ApiResult.failure('No active test session.');
+    return const ApiResult.failure('Please log in again.');
   }
 
   @override

@@ -92,7 +92,17 @@ final profileControllerProvider =
       );
     });
 
+final appRouterRefreshProvider = Provider<AppRouterRefreshNotifier>((ref) {
+  final notifier = AppRouterRefreshNotifier();
+  ref.listen(authControllerProvider, (_, _) => notifier.refresh());
+  ref.onDispose(notifier.dispose);
+  return notifier;
+});
+
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authControllerProvider);
-  return createAppRouter(authState: authState);
+  final refreshNotifier = ref.watch(appRouterRefreshProvider);
+  return createAppRouter(
+    authStateReader: () => ref.read(authControllerProvider),
+    refreshListenable: refreshNotifier,
+  );
 });

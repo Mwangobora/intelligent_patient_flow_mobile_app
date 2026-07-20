@@ -15,6 +15,11 @@ class ErrorMapper {
   static String _messageForDio(DioException error) {
     final normalized = error.error;
     if (normalized is ApiException) {
+      if (normalized.statusCode == 401) return 'Please log in again.';
+      if (normalized.statusCode == 403) return 'You do not have permission.';
+      if (normalized.statusCode != null && normalized.statusCode! >= 500) {
+        return 'Server is not reachable. Please try again.';
+      }
       if (normalized.message.toLowerCase().contains('invalid credentials')) {
         return 'Invalid email, phone, or password.';
       }
@@ -25,15 +30,15 @@ class ErrorMapper {
     }
     final statusCode = error.response?.statusCode;
     if (error.type == DioExceptionType.connectionError) {
-      return 'Could not connect to the server.';
+      return 'Server is not reachable. Please try again.';
     }
-    if (statusCode == 401) return 'Please sign in again.';
+    if (statusCode == 401) return 'Please log in again.';
     if (statusCode == 403) return 'You do not have permission.';
     if (statusCode == 422 || statusCode == 400) {
       return 'Please check the information and try again.';
     }
     if (statusCode != null && statusCode >= 500) {
-      return 'Server unavailable. Please try again later.';
+      return 'Server is not reachable. Please try again.';
     }
     return 'Network request failed. Please try again.';
   }

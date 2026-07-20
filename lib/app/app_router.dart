@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/appointments/presentation/screens/appointment_detail_screen.dart';
@@ -14,15 +15,27 @@ import '../features/profile/presentation/screens/profile_screen.dart';
 import '../features/queue/presentation/screens/queue_screen.dart';
 import '../features/auth/presentation/controllers/auth_controller.dart';
 
-GoRouter createAppRouter({required AuthState authState}) {
+class AppRouterRefreshNotifier extends ChangeNotifier {
+  void refresh() => notifyListeners();
+}
+
+GoRouter createAppRouter({
+  required AuthState Function() authStateReader,
+  required Listenable refreshListenable,
+}) {
   return GoRouter(
     initialLocation: '/splash',
+    refreshListenable: refreshListenable,
     redirect: (context, state) {
+      final authState = authStateReader();
       final location = state.uri.path;
       final isPublicAuthRoute = {'/login', '/register'}.contains(location);
       final isSessionRoute = {'/splash', '/onboarding'}.contains(location);
 
       if (authState.status == AuthStatus.unknown) {
+        return location == '/splash' ? null : '/splash';
+      }
+      if (authState.status == AuthStatus.sessionError) {
         return location == '/splash' ? null : '/splash';
       }
       if (authState.status == AuthStatus.unauthenticated &&

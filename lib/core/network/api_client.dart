@@ -1,6 +1,7 @@
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:flutter/foundation.dart';
 
 import '../constants/app_constants.dart';
 import 'api_exception.dart';
@@ -24,10 +25,12 @@ class ApiClient {
           },
         ),
       ) {
+    _debugLog('baseUrl=${AppConstants.apiBaseUrl}');
     dio.interceptors.add(CookieManager(_cookieJar));
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          _debugLog('request ${options.method} ${options.uri}');
           if (!await networkInfo.isConnected) {
             handler.reject(
               DioException(
@@ -40,7 +43,17 @@ class ApiClient {
           }
           handler.next(options);
         },
+        onResponse: (response, handler) {
+          _debugLog(
+            'response ${response.statusCode} ${response.requestOptions.uri}',
+          );
+          handler.next(response);
+        },
         onError: (error, handler) {
+          _debugLog(
+            'error ${error.response?.statusCode ?? error.type.name} '
+            '${error.requestOptions.uri}',
+          );
           handler.reject(_normalizeError(error));
         },
       ),
@@ -69,5 +82,9 @@ class ApiClient {
         details: data,
       ),
     );
+  }
+
+  void _debugLog(String message) {
+    if (kDebugMode) debugPrint('[api] $message');
   }
 }

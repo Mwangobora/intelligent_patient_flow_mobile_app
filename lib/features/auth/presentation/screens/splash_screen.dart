@@ -7,6 +7,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_loading_state.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../controllers/auth_controller.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -32,6 +33,34 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       title: 'Patient Flow',
       body: authState.isLoading
           ? const AppLoadingState(message: 'Checking your session...')
+          : authState.status == AuthStatus.sessionError
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.wifi_off_outlined,
+                  size: 56,
+                  color: AppColors.warning,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'We could not reach the server.',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  authState.errorMessage ??
+                      'Server is not reachable. Please try again.',
+                ),
+                const SizedBox(height: 28),
+                AppButton(
+                  label: 'Retry',
+                  onPressed: () => ref
+                      .read(authControllerProvider.notifier)
+                      .checkSession(force: true),
+                ),
+              ],
+            )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
