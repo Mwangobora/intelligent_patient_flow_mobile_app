@@ -1,6 +1,7 @@
 class PatientProfile {
   const PatientProfile({
     required this.id,
+    required this.organizationId,
     required this.patientNumber,
     required this.firstName,
     required this.lastName,
@@ -13,6 +14,7 @@ class PatientProfile {
   });
 
   final String id;
+  final String organizationId;
   final String patientNumber;
   final String firstName;
   final String? middleName;
@@ -32,6 +34,7 @@ class PatientProfile {
   factory PatientProfile.fromJson(Map<String, dynamic> json) {
     return PatientProfile(
       id: json['id'] as String? ?? '',
+      organizationId: json['organization'] as String? ?? '',
       patientNumber: json['patient_number'] as String? ?? '',
       firstName: json['first_name'] as String? ?? '',
       middleName: json['middle_name'] as String?,

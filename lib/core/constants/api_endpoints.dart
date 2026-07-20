@@ -4,6 +4,7 @@ class ApiEndpoints {
   static const auth = _AuthEndpoints();
   static const profile = _ProfileEndpoints();
   static const appointments = _AppointmentEndpoints();
+  static const facilities = _FacilityEndpoints();
   static const checkins = _CheckinEndpoints();
   static const queue = _QueueEndpoints();
   static const notifications = _NotificationEndpoints();
@@ -28,7 +29,19 @@ class _AppointmentEndpoints {
   const _AppointmentEndpoints();
 
   String get base => '/scheduling/appointments/';
+  String get slots => '/scheduling/slots/';
   String detail(String id) => '/scheduling/appointments/$id/';
+  String cancel(String id) => '/scheduling/appointments/$id/cancel/';
+  String reschedule(String id) => '/scheduling/appointments/$id/reschedule/';
+  String statusHistory(String id) =>
+      '/scheduling/appointments/$id/status-history/';
+}
+
+class _FacilityEndpoints {
+  const _FacilityEndpoints();
+
+  String get facilities => '/facilities/facilities/';
+  String get facilitySpecialties => '/facilities/facility-specialties/';
 }
 
 class _CheckinEndpoints {

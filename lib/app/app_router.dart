@@ -8,11 +8,11 @@ import '../features/auth/presentation/screens/onboarding_screen.dart';
 import '../features/auth/presentation/screens/register_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
 import '../features/checkin/presentation/screens/checkin_screen.dart';
+import '../features/home/presentation/screens/home_screen.dart';
 import '../features/notifications/presentation/screens/notifications_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
 import '../features/queue/presentation/screens/queue_screen.dart';
 import '../features/auth/presentation/controllers/auth_controller.dart';
-import 'home_screen.dart';
 
 GoRouter createAppRouter({required AuthState authState}) {
   return GoRouter(
@@ -62,6 +62,12 @@ GoRouter createAppRouter({required AuthState authState}) {
         path: '/appointments/:id',
         builder: (context, state) => AppointmentDetailScreen(
           appointmentId: state.pathParameters['id'] ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/appointments/:id/reschedule',
+        builder: (context, state) => AppointmentNewScreen(
+          rescheduleAppointmentId: state.pathParameters['id'],
         ),
       ),
       GoRoute(path: '/queue', builder: (context, state) => const QueueScreen()),
