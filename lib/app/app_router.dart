@@ -11,6 +11,7 @@ import '../features/auth/presentation/screens/splash_screen.dart';
 import '../features/checkin/presentation/screens/checkin_screen.dart';
 import '../features/checkin/presentation/screens/checkin_scan_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
+import '../features/notifications/presentation/screens/notification_detail_screen.dart';
 import '../features/notifications/presentation/screens/notifications_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
 import '../features/queue/presentation/screens/queue_screen.dart';
@@ -106,6 +107,12 @@ GoRouter createAppRouter({
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/notifications/:id',
+        builder: (context, state) => NotificationDetailScreen(
+          notificationId: state.pathParameters['id'] ?? '',
+        ),
       ),
       GoRoute(
         path: '/profile',

@@ -20,6 +20,10 @@ import '../features/checkin/data/checkin_api_service.dart';
 import '../features/checkin/data/checkin_repository_impl.dart';
 import '../features/checkin/domain/repositories/checkin_repository.dart';
 import '../features/checkin/presentation/controllers/checkin_controller.dart';
+import '../features/notifications/data/notifications_api_service.dart';
+import '../features/notifications/data/notifications_repository_impl.dart';
+import '../features/notifications/domain/repositories/notifications_repository.dart';
+import '../features/notifications/presentation/controllers/notifications_controller.dart';
 import '../features/profile/data/profile_api_service.dart';
 import '../features/profile/data/profile_repository_impl.dart';
 import '../features/profile/domain/repositories/profile_repository.dart';
@@ -118,6 +122,21 @@ final queueRepositoryProvider = Provider<QueueRepository>((ref) {
 final queueControllerProvider =
     StateNotifierProvider<QueueController, QueueState>((ref) {
       return QueueController(repository: ref.watch(queueRepositoryProvider));
+    });
+
+final notificationsRepositoryProvider = Provider<NotificationsRepository>((
+  ref,
+) {
+  return NotificationsRepositoryImpl(
+    NotificationsApiService(ref.watch(apiClientProvider)),
+  );
+});
+
+final notificationsControllerProvider =
+    StateNotifierProvider<NotificationsController, NotificationsState>((ref) {
+      return NotificationsController(
+        repository: ref.watch(notificationsRepositoryProvider),
+      );
     });
 
 final appRouterRefreshProvider = Provider<AppRouterRefreshNotifier>((ref) {

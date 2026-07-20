@@ -8,6 +8,7 @@ import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_card.dart';
 import '../../../../shared/widgets/app_error_state.dart';
+import '../../../../shared/widgets/app_password_field.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/app_status_badge.dart';
 import '../../../../shared/widgets/app_text_field.dart';
@@ -92,6 +93,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             profiles: profileState.patientProfiles,
             isLoading: profileState.isLoading,
             errorMessage: profileState.errorMessage,
+          ),
+          const SizedBox(height: AppSizes.lg),
+          _PasswordCard(
+            isSaving: authState.isLoading,
+            errorMessage: authState.errorMessage,
+            onSave: (oldPassword, newPassword) => ref
+                .read(authControllerProvider.notifier)
+                .changePassword(
+                  oldPassword: oldPassword,
+                  newPassword: newPassword,
+                ),
           ),
         ],
       ),
@@ -380,6 +392,169 @@ class _PatientProfileTile extends StatelessWidget {
         color: profile.isActive ? AppColors.success : AppColors.danger,
       ),
     );
+  }
+}
+
+class _PasswordCard extends StatefulWidget {
+  const _PasswordCard({
+    required this.isSaving,
+    required this.onSave,
+    this.errorMessage,
+  });
+
+  final bool isSaving;
+  final String? errorMessage;
+  final Future<bool> Function(String oldPassword, String newPassword) onSave;
+
+  @override
+  State<_PasswordCard> createState() => _PasswordCardState();
+}
+
+class _PasswordCardState extends State<_PasswordCard> {
+  final _formKey = GlobalKey<FormState>();
+  final _oldPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _isEditing = false;
+  bool _saved = false;
+
+  @override
+  void dispose() {
+    _oldPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      child: _isEditing ? _buildForm(context) : _buildSummary(context),
+    );
+  }
+
+  Widget _buildSummary(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.lock_outline, color: AppColors.primaryTeal),
+            const SizedBox(width: AppSizes.sm),
+            Expanded(
+              child: Text(
+                'Password',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            TextButton(
+              onPressed: () => setState(() => _isEditing = true),
+              child: const Text('Change'),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSizes.sm),
+        Text(
+          _saved
+              ? 'Your password was updated.'
+              : 'Keep your patient account secure with a strong password.',
+          style: TextStyle(color: _saved ? AppColors.success : null),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildForm(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Change password',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          if (widget.errorMessage != null) ...[
+            const SizedBox(height: AppSizes.sm),
+            Text(
+              widget.errorMessage!,
+              style: const TextStyle(color: AppColors.danger),
+            ),
+          ],
+          const SizedBox(height: AppSizes.md),
+          AppPasswordField(
+            label: 'Current password',
+            controller: _oldPasswordController,
+            validator: (value) =>
+                Validators.required(value, field: 'Current password'),
+          ),
+          const SizedBox(height: AppSizes.md),
+          AppPasswordField(
+            label: 'New password',
+            controller: _newPasswordController,
+            validator: (value) =>
+                Validators.required(value, field: 'New password'),
+          ),
+          const SizedBox(height: AppSizes.md),
+          AppPasswordField(
+            label: 'Confirm new password',
+            controller: _confirmPasswordController,
+            validator: _validateConfirmPassword,
+          ),
+          const SizedBox(height: AppSizes.lg),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: widget.isSaving ? null : _cancel,
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: AppSizes.md),
+              Expanded(
+                child: AppButton(
+                  label: 'Update',
+                  isLoading: widget.isSaving,
+                  onPressed: _save,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String? _validateConfirmPassword(String? value) {
+    final required = Validators.required(value, field: 'Confirm password');
+    if (required != null) return required;
+    if (value != _newPasswordController.text) {
+      return 'Passwords do not match.';
+    }
+    return null;
+  }
+
+  Future<void> _save() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final saved = await widget.onSave(
+      _oldPasswordController.text,
+      _newPasswordController.text,
+    );
+    if (!saved || !mounted) return;
+    _oldPasswordController.clear();
+    _newPasswordController.clear();
+    _confirmPasswordController.clear();
+    setState(() {
+      _isEditing = false;
+      _saved = true;
+    });
+  }
+
+  void _cancel() {
+    _oldPasswordController.clear();
+    _newPasswordController.clear();
+    _confirmPasswordController.clear();
+    setState(() => _isEditing = false);
   }
 }
 

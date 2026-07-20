@@ -16,5 +16,10 @@ abstract interface class AuthRepository {
     String? lastName,
   });
 
+  Future<ApiResult<void>> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  });
+
   Future<ApiResult<void>> logout();
 }

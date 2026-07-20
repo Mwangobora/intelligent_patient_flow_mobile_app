@@ -43,6 +43,16 @@ class AuthApiService {
     return AuthUser.fromJson(response.data ?? <String, dynamic>{});
   }
 
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    await _apiClient.dio.post<void>(
+      ApiEndpoints.auth.changePassword,
+      data: {'old_password': oldPassword, 'new_password': newPassword},
+    );
+  }
+
   Future<void> logout() async {
     await _apiClient.dio.post<void>(ApiEndpoints.auth.logout, data: {});
     await _apiClient.clearSession();

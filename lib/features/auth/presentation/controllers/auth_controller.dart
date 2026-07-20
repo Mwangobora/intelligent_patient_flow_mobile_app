@@ -144,6 +144,28 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
+  Future<bool> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    final result = await repository.changePassword(
+      oldPassword: oldPassword,
+      newPassword: newPassword,
+    );
+    switch (result) {
+      case ApiSuccess():
+        state = state.copyWith(isLoading: false, clearError: true);
+        return true;
+      case ApiFailure(message: final message):
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: _friendlyPasswordError(message),
+        );
+        return false;
+    }
+  }
+
   bool _isUnauthorizedSession(String message) {
     final normalized = message.toLowerCase();
     return normalized.contains('log in') ||
@@ -154,5 +176,19 @@ class AuthController extends StateNotifier<AuthState> {
 
   void _logTransition(String event) {
     if (kDebugMode) debugPrint('[auth] $event');
+  }
+
+  String _friendlyPasswordError(String message) {
+    final normalized = message.toLowerCase();
+    if (normalized.contains('old password') ||
+        normalized.contains('incorrect')) {
+      return 'Your current password is incorrect.';
+    }
+    if (normalized.contains('too short') ||
+        normalized.contains('common') ||
+        normalized.contains('numeric')) {
+      return 'Please choose a stronger new password.';
+    }
+    return message;
   }
 }

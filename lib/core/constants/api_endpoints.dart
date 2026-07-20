@@ -17,6 +17,7 @@ class _AuthEndpoints {
   String get login => '/auth/login/';
   String get logout => '/auth/logout/';
   String get me => '/auth/me/';
+  String get refresh => '/auth/refresh/';
   String get changePassword => '/auth/change-password/';
 }
 
@@ -74,4 +75,13 @@ class _NotificationEndpoints {
   const _NotificationEndpoints();
 
   String get base => '/notifications/';
+  String detail(String id) => '/notifications/$id/';
+  String markRead(String id) => '/notifications/$id/mark-read/';
+  String get pushDevices => '/notifications/push-devices/';
+  String pushDeviceLastSeen(String id) =>
+      '/notifications/push-devices/$id/last-seen/';
+  String pushDeviceRevoke(String id) =>
+      '/notifications/push-devices/$id/revoke/';
+  String pushDeviceDeactivate(String id) =>
+      '/notifications/push-devices/$id/deactivate/';
 }

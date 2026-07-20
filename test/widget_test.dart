@@ -46,6 +46,14 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<ApiResult<void>> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    return const ApiResult.failure('Password change is not used in this test.');
+  }
+
+  @override
   Future<ApiResult<AuthUser>> updateCurrentUser({
     String? firstName,
     String? middleName,

@@ -253,7 +253,10 @@ class BookingController extends StateNotifier<BookingState> {
       case ApiSuccess(data: final facilities):
         state = state.copyWith(facilities: facilities, isLoading: false);
       case ApiFailure(message: final message):
-        state = state.copyWith(isLoading: false, errorMessage: message);
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: _bookingLookupMessage(message),
+        );
     }
   }
 
@@ -273,7 +276,7 @@ class BookingController extends StateNotifier<BookingState> {
       case ApiSuccess(data: final specialties):
         state = state.copyWith(specialties: specialties);
       case ApiFailure(message: final message):
-        state = state.copyWith(errorMessage: message);
+        state = state.copyWith(errorMessage: _bookingLookupMessage(message));
     }
   }
 
@@ -330,7 +333,7 @@ class BookingController extends StateNotifier<BookingState> {
         );
         await _loadSlotsIfReady();
       case ApiFailure(message: final message):
-        state = state.copyWith(errorMessage: message);
+        state = state.copyWith(errorMessage: _bookingLookupMessage(message));
     }
   }
 
@@ -417,7 +420,17 @@ class BookingController extends StateNotifier<BookingState> {
       case ApiSuccess(data: final slots):
         state = state.copyWith(slots: slots, isLoading: false);
       case ApiFailure(message: final message):
-        state = state.copyWith(isLoading: false, errorMessage: message);
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: _bookingLookupMessage(message),
+        );
     }
+  }
+
+  String _bookingLookupMessage(String message) {
+    if (message.toLowerCase().contains('permission')) {
+      return 'Appointment booking lookups are not available for patient mobile yet. Please contact reception to book this appointment.';
+    }
+    return message;
   }
 }

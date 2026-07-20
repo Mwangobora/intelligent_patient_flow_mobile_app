@@ -11,6 +11,7 @@ import '../../../../shared/widgets/app_empty_state.dart';
 import '../../../../shared/widgets/app_loading_state.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../appointments/data/models/appointment_models.dart';
+import '../../../notifications/presentation/widgets/notification_bell.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -22,6 +23,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _loadedProfiles = false;
   String? _loadedAppointmentPatientId;
+  String? _loadedNotificationPatientId;
 
   @override
   void initState() {
@@ -54,11 +56,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             .loadAppointments(patient.id);
       });
     }
+    if (patient != null && _loadedNotificationPatientId != patient.id) {
+      _loadedNotificationPatientId = patient.id;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref
+            .read(notificationsControllerProvider.notifier)
+            .loadNotifications(patient.id, quiet: true);
+      });
+    }
 
     return AppScaffold(
       title: 'Patient Home',
       showBottomNavigation: true,
       actions: [
+        const NotificationBell(),
         IconButton(
           tooltip: 'Logout',
           onPressed: authState.isLoading
@@ -112,10 +123,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   icon: Icons.qr_code_scanner,
                   onTap: () => context.go('/checkin'),
                 ),
-                const _QuickAction(
+                _QuickAction(
                   label: 'Notifications',
                   icon: Icons.notifications_outlined,
-                  isEnabled: false,
+                  onTap: () => context.go('/notifications'),
                 ),
               ],
             ),
@@ -189,48 +200,30 @@ class _QuickActionGrid extends StatelessWidget {
 }
 
 class _QuickAction extends StatelessWidget {
-  const _QuickAction({
-    required this.label,
-    required this.icon,
-    this.onTap,
-    this.isEnabled = true,
-  });
+  const _QuickAction({required this.label, required this.icon, this.onTap});
 
   final String label;
   final IconData icon;
   final VoidCallback? onTap;
-  final bool isEnabled;
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
       child: InkWell(
-        onTap: isEnabled ? onTap : null,
+        onTap: onTap,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: isEnabled
-                  ? AppColors.primaryTeal
-                  : AppColors.textSecondary,
-            ),
+            Icon(icon, color: AppColors.primaryTeal),
             const SizedBox(height: AppSizes.sm),
             Text(
               label,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.w700,
-                color: isEnabled
-                    ? AppColors.textPrimary
-                    : AppColors.textSecondary,
+                color: AppColors.textPrimary,
               ),
             ),
-            if (!isEnabled)
-              const Text(
-                'Soon',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
           ],
         ),
       ),

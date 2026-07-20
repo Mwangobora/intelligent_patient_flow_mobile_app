@@ -53,6 +53,22 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<ApiResult<void>> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await _apiService.changePassword(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+      );
+      return const ApiResult.success(null);
+    } catch (error) {
+      return ApiResult.failure(ErrorMapper.fromObject(error).message);
+    }
+  }
+
+  @override
   Future<ApiResult<void>> logout() async {
     try {
       await _apiService.logout();
