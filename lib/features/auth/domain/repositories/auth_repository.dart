@@ -1,5 +1,20 @@
 import '../../../../core/network/api_result.dart';
+import '../../data/models/auth_response.dart';
+import '../../data/models/auth_user.dart';
 
 abstract interface class AuthRepository {
-  Future<ApiResult<Map<String, dynamic>>> currentUser();
+  Future<ApiResult<AuthResponse>> login({
+    required String emailOrPhone,
+    required String password,
+  });
+
+  Future<ApiResult<AuthUser>> currentUser();
+
+  Future<ApiResult<AuthUser>> updateCurrentUser({
+    String? firstName,
+    String? middleName,
+    String? lastName,
+  });
+
+  Future<ApiResult<void>> logout();
 }

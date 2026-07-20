@@ -13,6 +13,16 @@ class ErrorMapper {
   }
 
   static String _messageForDio(DioException error) {
+    final normalized = error.error;
+    if (normalized is ApiException) {
+      if (normalized.message.toLowerCase().contains('invalid credentials')) {
+        return 'Invalid email, phone, or password.';
+      }
+      if (normalized.message.toLowerCase().contains('inactive')) {
+        return 'This account is disabled. Please contact the hospital.';
+      }
+      return normalized.message;
+    }
     final statusCode = error.response?.statusCode;
     if (error.type == DioExceptionType.connectionError) {
       return 'Could not connect to the server.';

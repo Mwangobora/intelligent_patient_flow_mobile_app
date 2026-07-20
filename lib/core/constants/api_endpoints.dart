@@ -15,6 +15,7 @@ class _AuthEndpoints {
   String get login => '/auth/login/';
   String get logout => '/auth/logout/';
   String get me => '/auth/me/';
+  String get changePassword => '/auth/change-password/';
 }
 
 class _ProfileEndpoints {

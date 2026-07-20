@@ -7,8 +7,8 @@ import 'api_exception.dart';
 import 'network_info.dart';
 
 class ApiClient {
-  ApiClient({required this.networkInfo})
-    : _cookieJar = CookieJar(),
+  ApiClient({required this.networkInfo, CookieJar? cookieJar})
+    : _cookieJar = cookieJar ?? CookieJar(),
       dio = Dio(
         BaseOptions(
           baseUrl: AppConstants.apiBaseUrl,
@@ -50,6 +50,8 @@ class ApiClient {
   final Dio dio;
   final NetworkInfo networkInfo;
   final CookieJar _cookieJar;
+
+  Future<void> clearSession() => _cookieJar.deleteAll();
 
   DioException _normalizeError(DioException error) {
     final data = error.response?.data;

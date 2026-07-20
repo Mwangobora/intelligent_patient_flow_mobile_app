@@ -11,11 +11,30 @@ import '../features/checkin/presentation/screens/checkin_screen.dart';
 import '../features/notifications/presentation/screens/notifications_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
 import '../features/queue/presentation/screens/queue_screen.dart';
+import '../features/auth/presentation/controllers/auth_controller.dart';
 import 'home_screen.dart';
 
-GoRouter createAppRouter() {
+GoRouter createAppRouter({required AuthState authState}) {
   return GoRouter(
     initialLocation: '/splash',
+    redirect: (context, state) {
+      final location = state.uri.path;
+      final isPublicAuthRoute = {'/login', '/register'}.contains(location);
+      final isSessionRoute = {'/splash', '/onboarding'}.contains(location);
+
+      if (authState.status == AuthStatus.unknown) {
+        return location == '/splash' ? null : '/splash';
+      }
+      if (authState.status == AuthStatus.unauthenticated &&
+          !isPublicAuthRoute) {
+        return '/login';
+      }
+      if (authState.status == AuthStatus.authenticated &&
+          (isPublicAuthRoute || isSessionRoute)) {
+        return '/home';
+      }
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/splash',

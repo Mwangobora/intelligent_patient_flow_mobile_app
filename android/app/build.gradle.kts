@@ -7,7 +7,7 @@ plugins {
 android {
     namespace = "com.patientflow.intelligent_patient_mobile_app"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "30.0.14904198"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
