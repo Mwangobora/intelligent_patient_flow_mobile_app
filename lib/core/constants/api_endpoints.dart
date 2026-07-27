@@ -32,20 +32,21 @@ class _ProfileEndpoints {
 class _AppointmentEndpoints {
   const _AppointmentEndpoints();
 
-  String get base => '/scheduling/appointments/';
-  String get slots => '/scheduling/slots/';
-  String detail(String id) => '/scheduling/appointments/$id/';
-  String cancel(String id) => '/scheduling/appointments/$id/cancel/';
-  String reschedule(String id) => '/scheduling/appointments/$id/reschedule/';
+  String get base => '/patient/appointments/';
+  String get slots => '/patient/appointment-slots/';
+  String detail(String id) => '/patient/appointments/$id/';
+  String cancel(String id) => '/patient/appointments/$id/cancel/';
+  String reschedule(String id) => '/patient/appointments/$id/reschedule/';
   String statusHistory(String id) =>
-      '/scheduling/appointments/$id/status-history/';
+      '/patient/appointments/$id/status-history/';
 }
 
 class _FacilityEndpoints {
   const _FacilityEndpoints();
 
-  String get facilities => '/facilities/facilities/';
-  String get facilitySpecialties => '/facilities/facility-specialties/';
+  String get facilities => '/patient/facilities/';
+  String facilitySpecialties(String facilityId) =>
+      '/patient/facilities/$facilityId/specialties/';
 }
 
 class _CheckinEndpoints {

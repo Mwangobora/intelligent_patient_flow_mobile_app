@@ -14,7 +14,7 @@ class AppointmentsApiService {
     DateTime? startsFrom,
     DateTime? endsTo,
   }) async {
-    final queryParameters = <String, String>{'patient_id': patientId};
+    final queryParameters = <String, String>{};
     if (status != null) queryParameters['status'] = status;
     if (startsFrom != null) {
       queryParameters['starts_from'] = startsFrom.toIso8601String();
@@ -57,7 +57,6 @@ class AppointmentsApiService {
     String? reasonForVisit,
   }) async {
     final data = <String, String>{
-      'patient_id': patientId,
       'facility_id': facilityId,
       'facility_specialty_id': facilitySpecialtyId,
       'scheduled_start': scheduledStart.toIso8601String(),
@@ -136,8 +135,7 @@ class AppointmentsApiService {
     required String facilityId,
   }) async {
     final response = await _apiClient.dio.get<dynamic>(
-      ApiEndpoints.facilities.facilitySpecialties,
-      queryParameters: {'facility_id': facilityId, 'is_active': 'true'},
+      ApiEndpoints.facilities.facilitySpecialties(facilityId),
     );
     return _asList(response.data)
         .whereType<Map<String, dynamic>>()

@@ -429,7 +429,7 @@ class BookingController extends StateNotifier<BookingState> {
 
   String _bookingLookupMessage(String message) {
     if (message.toLowerCase().contains('permission')) {
-      return 'Appointment booking lookups are not available for patient mobile yet. Please contact reception to book this appointment.';
+      return 'You do not have access to appointment booking. Please sign in again or contact reception.';
     }
     return message;
   }
