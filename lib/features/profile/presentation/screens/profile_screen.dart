@@ -29,12 +29,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final user = ref.read(authControllerProvider).user;
-      if (user != null) {
-        ref
-            .read(profileControllerProvider.notifier)
-            .loadLinkedPatientProfiles(user.id);
-      }
+      ref.read(profileControllerProvider.notifier).loadCurrentPatientProfile();
     });
   }
 
@@ -89,10 +84,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: AppSizes.lg),
           _MembershipsCard(memberships: user.memberships),
           const SizedBox(height: AppSizes.lg),
-          _PatientProfilesCard(
-            profiles: profileState.patientProfiles,
+          _PatientProfileCard(
+            profile: profileState.patientProfile,
             isLoading: profileState.isLoading,
             errorMessage: profileState.errorMessage,
+            onSave: (email, phoneNumber) async {
+              final saved = await ref
+                  .read(profileControllerProvider.notifier)
+                  .updateCurrentPatientProfile(
+                    email: email,
+                    phoneNumber: phoneNumber,
+                  );
+              if (saved) {
+                await ref
+                    .read(authControllerProvider.notifier)
+                    .checkSession(force: true);
+              }
+              return saved;
+            },
           ),
           const SizedBox(height: AppSizes.lg),
           _PasswordCard(
@@ -330,16 +339,51 @@ class _MembershipsCard extends StatelessWidget {
   }
 }
 
-class _PatientProfilesCard extends StatelessWidget {
-  const _PatientProfilesCard({
-    required this.profiles,
+class _PatientProfileCard extends StatefulWidget {
+  const _PatientProfileCard({
+    required this.profile,
     required this.isLoading,
+    required this.onSave,
     this.errorMessage,
   });
 
-  final List<PatientProfile> profiles;
+  final PatientProfile? profile;
   final bool isLoading;
   final String? errorMessage;
+  final Future<bool> Function(String? email, String? phoneNumber) onSave;
+
+  @override
+  State<_PatientProfileCard> createState() => _PatientProfileCardState();
+}
+
+class _PatientProfileCardState extends State<_PatientProfileCard> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  bool _isEditing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController.text = widget.profile?.email ?? '';
+    _phoneController.text = widget.profile?.phoneNumber ?? '';
+  }
+
+  @override
+  void didUpdateWidget(covariant _PatientProfileCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.profile?.id != widget.profile?.id || !_isEditing) {
+      _emailController.text = widget.profile?.email ?? '';
+      _phoneController.text = widget.profile?.phoneNumber ?? '';
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -352,29 +396,92 @@ class _PatientProfilesCard extends StatelessWidget {
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: AppSizes.md),
-          if (isLoading)
+          if (widget.isLoading)
             const Center(child: CircularProgressIndicator())
-          else if (errorMessage != null)
+          else if (widget.errorMessage != null)
             Text(
-              errorMessage!,
+              widget.errorMessage!,
               style: const TextStyle(color: AppColors.warning),
             )
-          else if (profiles.isEmpty)
-            const Text(
-              'No patient profile is linked to this account yet. A patient-safe profile endpoint is still needed for mobile self-service.',
-            )
+          else if (widget.profile == null)
+            const Text('No patient profile is linked to this account yet.')
+          else if (_isEditing)
+            _buildContactForm()
           else
-            ...profiles.map(_PatientProfileTile.new),
+            _PatientProfileTile(
+              widget.profile!,
+              onEdit: () => setState(() => _isEditing = true),
+            ),
         ],
       ),
     );
   }
+
+  Widget _buildContactForm() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AppTextField(
+            label: 'Email',
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            validator: Validators.email,
+          ),
+          const SizedBox(height: AppSizes.md),
+          AppTextField(
+            label: 'Phone',
+            hintText: '075...',
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+          ),
+          const SizedBox(height: AppSizes.lg),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: widget.isLoading
+                      ? null
+                      : () => setState(() => _isEditing = false),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: AppSizes.md),
+              Expanded(
+                child: AppButton(
+                  label: 'Save',
+                  isLoading: widget.isLoading,
+                  onPressed: _save,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _save() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final saved = await widget.onSave(
+      _emptyToNull(_emailController.text),
+      _emptyToNull(_phoneController.text),
+    );
+    if (saved && mounted) setState(() => _isEditing = false);
+  }
+
+  String? _emptyToNull(String value) {
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
 }
 
 class _PatientProfileTile extends StatelessWidget {
-  const _PatientProfileTile(this.profile);
+  const _PatientProfileTile(this.profile, {required this.onEdit});
 
   final PatientProfile profile;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -383,14 +490,19 @@ class _PatientProfileTile extends StatelessWidget {
       leading: const Icon(Icons.badge_outlined),
       title: Text(profile.fullName),
       subtitle: Text(
-        profile.patientNumber.isEmpty
-            ? 'Patient number unavailable'
-            : profile.patientNumber,
+        [
+          profile.patientNumber.isEmpty
+              ? 'Patient number unavailable'
+              : profile.patientNumber,
+          profile.registeredFacilityName,
+          profile.phoneNumber,
+        ].whereType<String>().where((value) => value.isNotEmpty).join(' • '),
       ),
       trailing: AppStatusBadge(
         label: profile.isActive ? 'Active' : 'Inactive',
         color: profile.isActive ? AppColors.success : AppColors.danger,
       ),
+      onTap: onEdit,
     );
   }
 }

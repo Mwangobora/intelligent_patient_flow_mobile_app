@@ -13,7 +13,7 @@ class AuthState {
     this.user,
     this.errorMessage,
     this.isLoading = false,
-    this.registrationSupported = false,
+    this.registrationSupported = true,
   });
 
   final AuthStatus status;
@@ -101,6 +101,53 @@ class AuthController extends StateNotifier<AuthState> {
         return true;
       case ApiFailure(message: final message):
         _logTransition('login_failed');
+        state = state.copyWith(
+          status: AuthStatus.unauthenticated,
+          errorMessage: message,
+          isLoading: false,
+          clearUser: true,
+        );
+        return false;
+    }
+  }
+
+  Future<bool> register({
+    required String firstName,
+    String? middleName,
+    required String lastName,
+    String? dateOfBirth,
+    bool dateOfBirthIsEstimated = false,
+    String? sexCode,
+    String? email,
+    String? phoneNumber,
+    required String password,
+    required String passwordConfirm,
+  }) async {
+    _logTransition('registration_submitted');
+    state = state.copyWith(isLoading: true, clearError: true);
+    final result = await repository.register(
+      firstName: firstName,
+      middleName: middleName,
+      lastName: lastName,
+      dateOfBirth: dateOfBirth,
+      dateOfBirthIsEstimated: dateOfBirthIsEstimated,
+      sexCode: sexCode,
+      email: email,
+      phoneNumber: phoneNumber,
+      password: password,
+      passwordConfirm: passwordConfirm,
+    );
+    switch (result) {
+      case ApiSuccess(data: final response):
+        _logTransition('registration_authenticated');
+        state = state.copyWith(
+          status: AuthStatus.authenticated,
+          user: response.user,
+          isLoading: false,
+        );
+        return true;
+      case ApiFailure(message: final message):
+        _logTransition('registration_failed');
         state = state.copyWith(
           status: AuthStatus.unauthenticated,
           errorMessage: message,

@@ -68,9 +68,7 @@ class ApiClient {
 
   DioException _normalizeError(DioException error) {
     final data = error.response?.data;
-    final message = data is Map && data['detail'] is String
-        ? data['detail'] as String
-        : 'Request failed. Please try again.';
+    final message = _extractErrorMessage(error);
 
     return DioException(
       requestOptions: error.requestOptions,
@@ -82,6 +80,28 @@ class ApiClient {
         details: data,
       ),
     );
+  }
+
+  String _extractErrorMessage(DioException error) {
+    final data = error.response?.data;
+    if (data is Map) {
+      final detail = data['detail'];
+      if (detail is String) return detail;
+      final firstFieldError = data.entries
+          .where(
+            (entry) => entry.value is List && (entry.value as List).isNotEmpty,
+          )
+          .map((entry) => '${entry.key}: ${(entry.value as List).first}')
+          .firstOrNull;
+      if (firstFieldError != null) return firstFieldError;
+    }
+    if (data is String && data.toLowerCase().contains('disallowedhost')) {
+      return 'The hospital server rejected this device address. Please check the API server address.';
+    }
+    if (error.type == DioExceptionType.connectionError) {
+      return 'Could not connect to the hospital server. Please check your network.';
+    }
+    return 'Request failed. Please try again.';
   }
 
   void _debugLog(String message) {

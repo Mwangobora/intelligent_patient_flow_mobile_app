@@ -11,6 +11,9 @@ class PatientProfile {
     this.middleName,
     this.dateOfBirth,
     this.sexCode,
+    this.organizationName,
+    this.registeredFacilityId,
+    this.registeredFacilityName,
   });
 
   final String id;
@@ -23,6 +26,9 @@ class PatientProfile {
   final String? phoneNumber;
   final String? dateOfBirth;
   final String? sexCode;
+  final String? organizationName;
+  final String? registeredFacilityId;
+  final String? registeredFacilityName;
   final bool isActive;
 
   String get fullName => [
@@ -43,6 +49,9 @@ class PatientProfile {
       phoneNumber: json['phone_number'] as String?,
       dateOfBirth: json['date_of_birth'] as String?,
       sexCode: json['sex_code'] as String?,
+      organizationName: json['organization_name'] as String?,
+      registeredFacilityId: json['registered_facility'] as String?,
+      registeredFacilityName: json['registered_facility_name'] as String?,
       isActive: json['is_active'] as bool? ?? false,
     );
   }

@@ -16,6 +16,9 @@ class ErrorMapper {
     final normalized = error.error;
     if (normalized is ApiException) {
       if (normalized.statusCode == 401) return 'Please log in again.';
+      if (_isSessionProbe(error) && normalized.statusCode == 400) {
+        return 'Please log in again.';
+      }
       if (normalized.statusCode == 403) return 'You do not have permission.';
       if (normalized.statusCode != null && normalized.statusCode! >= 500) {
         return 'Server is not reachable. Please try again.';
@@ -33,6 +36,9 @@ class ErrorMapper {
       return 'Server is not reachable. Please try again.';
     }
     if (statusCode == 401) return 'Please log in again.';
+    if (_isSessionProbe(error) && statusCode == 400) {
+      return 'Please log in again.';
+    }
     if (statusCode == 403) return 'You do not have permission.';
     if (statusCode == 422 || statusCode == 400) {
       return 'Please check the information and try again.';
@@ -41,5 +47,9 @@ class ErrorMapper {
       return 'Server is not reachable. Please try again.';
     }
     return 'Network request failed. Please try again.';
+  }
+
+  static bool _isSessionProbe(DioException error) {
+    return error.requestOptions.path == '/auth/me/';
   }
 }

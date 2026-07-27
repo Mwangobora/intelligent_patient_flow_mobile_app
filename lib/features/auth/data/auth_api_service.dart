@@ -19,6 +19,36 @@ class AuthApiService {
     return AuthResponse.fromJson(response.data ?? <String, dynamic>{});
   }
 
+  Future<AuthResponse> register({
+    required String firstName,
+    String? middleName,
+    required String lastName,
+    String? dateOfBirth,
+    bool dateOfBirthIsEstimated = false,
+    String? sexCode,
+    String? email,
+    String? phoneNumber,
+    required String password,
+    required String passwordConfirm,
+  }) async {
+    final response = await _apiClient.dio.post<Map<String, dynamic>>(
+      ApiEndpoints.auth.register,
+      data: {
+        'first_name': firstName,
+        'middle_name': middleName,
+        'last_name': lastName,
+        'date_of_birth': dateOfBirth,
+        'date_of_birth_is_estimated': dateOfBirthIsEstimated,
+        'sex_code': sexCode,
+        'email': email,
+        'phone_number': phoneNumber,
+        'password': password,
+        'password_confirm': passwordConfirm,
+      },
+    );
+    return AuthResponse.fromJson(response.data ?? <String, dynamic>{});
+  }
+
   Future<AuthUser> currentUser() async {
     final response = await _apiClient.dio.get<Map<String, dynamic>>(
       ApiEndpoints.auth.me,

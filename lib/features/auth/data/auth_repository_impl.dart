@@ -25,6 +25,39 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<ApiResult<AuthResponse>> register({
+    required String firstName,
+    String? middleName,
+    required String lastName,
+    String? dateOfBirth,
+    bool dateOfBirthIsEstimated = false,
+    String? sexCode,
+    String? email,
+    String? phoneNumber,
+    required String password,
+    required String passwordConfirm,
+  }) async {
+    try {
+      return ApiResult.success(
+        await _apiService.register(
+          firstName: firstName,
+          middleName: middleName,
+          lastName: lastName,
+          dateOfBirth: dateOfBirth,
+          dateOfBirthIsEstimated: dateOfBirthIsEstimated,
+          sexCode: sexCode,
+          email: email,
+          phoneNumber: phoneNumber,
+          password: password,
+          passwordConfirm: passwordConfirm,
+        ),
+      );
+    } catch (error) {
+      return ApiResult.failure(ErrorMapper.fromObject(error).message);
+    }
+  }
+
+  @override
   Future<ApiResult<AuthUser>> currentUser() async {
     try {
       return ApiResult.success(await _apiService.currentUser());

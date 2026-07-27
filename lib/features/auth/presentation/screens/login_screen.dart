@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/app_providers.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../../../shared/widgets/app_snackbar.dart';
 import '../widgets/login_form.dart';
 
 class LoginScreen extends ConsumerWidget {
@@ -42,9 +43,19 @@ class LoginScreen extends ConsumerWidget {
             isLoading: authState.isLoading,
             registrationSupported: authState.registrationSupported,
             onSubmit: (emailOrPhone, password) async {
-              await ref
+              final loggedIn = await ref
                   .read(authControllerProvider.notifier)
                   .login(emailOrPhone: emailOrPhone, password: password);
+              if (!context.mounted) return;
+              if (loggedIn) {
+                showAppSuccessSnackBar(context, 'Signed in successfully.');
+              } else {
+                showAppErrorSnackBar(
+                  context,
+                  ref.read(authControllerProvider).errorMessage ??
+                      'Could not sign in. Please try again.',
+                );
+              }
             },
           ),
         ],

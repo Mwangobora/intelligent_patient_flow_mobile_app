@@ -8,6 +8,19 @@ abstract interface class AuthRepository {
     required String password,
   });
 
+  Future<ApiResult<AuthResponse>> register({
+    required String firstName,
+    String? middleName,
+    required String lastName,
+    String? dateOfBirth,
+    bool dateOfBirthIsEstimated,
+    String? sexCode,
+    String? email,
+    String? phoneNumber,
+    required String password,
+    required String passwordConfirm,
+  });
+
   Future<ApiResult<AuthUser>> currentUser();
 
   Future<ApiResult<AuthUser>> updateCurrentUser({

@@ -41,6 +41,22 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<ApiResult<AuthResponse>> register({
+    required String firstName,
+    String? middleName,
+    required String lastName,
+    String? dateOfBirth,
+    bool dateOfBirthIsEstimated = false,
+    String? sexCode,
+    String? email,
+    String? phoneNumber,
+    required String password,
+    required String passwordConfirm,
+  }) async {
+    return const ApiResult.failure('Registration is not used in this test.');
+  }
+
+  @override
   Future<ApiResult<void>> logout() async {
     return const ApiResult.success(null);
   }

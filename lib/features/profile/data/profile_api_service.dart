@@ -7,16 +7,21 @@ class ProfileApiService {
 
   final ApiClient _apiClient;
 
-  Future<List<PatientProfile>> listPatientProfiles({
-    required String userId,
-  }) async {
-    final response = await _apiClient.dio.get<List<dynamic>>(
-      ApiEndpoints.profile.patients,
-      queryParameters: {'user_id': userId, 'is_active': true},
+  Future<PatientProfile> currentPatientProfile() async {
+    final response = await _apiClient.dio.get<Map<String, dynamic>>(
+      ApiEndpoints.profile.me,
     );
-    return (response.data ?? <dynamic>[])
-        .whereType<Map<String, dynamic>>()
-        .map(PatientProfile.fromJson)
-        .toList();
+    return PatientProfile.fromJson(response.data ?? <String, dynamic>{});
+  }
+
+  Future<PatientProfile> updateCurrentPatientProfile({
+    String? email,
+    String? phoneNumber,
+  }) async {
+    final response = await _apiClient.dio.patch<Map<String, dynamic>>(
+      ApiEndpoints.profile.me,
+      data: {'email': email, 'phone_number': phoneNumber},
+    );
+    return PatientProfile.fromJson(response.data ?? <String, dynamic>{});
   }
 }

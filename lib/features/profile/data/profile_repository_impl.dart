@@ -10,12 +10,25 @@ class ProfileRepositoryImpl implements ProfileRepository {
   final ProfileApiService _apiService;
 
   @override
-  Future<ApiResult<List<PatientProfile>>> listProfiles({
-    required String userId,
+  Future<ApiResult<PatientProfile>> currentProfile() async {
+    try {
+      return ApiResult.success(await _apiService.currentPatientProfile());
+    } catch (error) {
+      return ApiResult.failure(ErrorMapper.fromObject(error).message);
+    }
+  }
+
+  @override
+  Future<ApiResult<PatientProfile>> updateCurrentProfile({
+    String? email,
+    String? phoneNumber,
   }) async {
     try {
       return ApiResult.success(
-        await _apiService.listPatientProfiles(userId: userId),
+        await _apiService.updateCurrentPatientProfile(
+          email: email,
+          phoneNumber: phoneNumber,
+        ),
       );
     } catch (error) {
       return ApiResult.failure(ErrorMapper.fromObject(error).message);

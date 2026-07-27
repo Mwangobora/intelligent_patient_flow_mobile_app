@@ -15,6 +15,7 @@ class _AuthEndpoints {
   const _AuthEndpoints();
 
   String get login => '/auth/login/';
+  String get register => '/patient/register/';
   String get logout => '/auth/logout/';
   String get me => '/auth/me/';
   String get refresh => '/auth/refresh/';
@@ -24,7 +25,8 @@ class _AuthEndpoints {
 class _ProfileEndpoints {
   const _ProfileEndpoints();
 
-  String get patients => '/patients/';
+  String get me => '/patient/me/';
+  String get claimExistingRecord => '/patient/claim-existing-record/';
 }
 
 class _AppointmentEndpoints {
