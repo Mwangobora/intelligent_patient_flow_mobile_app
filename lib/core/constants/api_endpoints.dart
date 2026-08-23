@@ -77,9 +77,9 @@ class _IntelligenceEndpoints {
 class _NotificationEndpoints {
   const _NotificationEndpoints();
 
-  String get base => '/notifications/';
-  String detail(String id) => '/notifications/$id/';
-  String markRead(String id) => '/notifications/$id/mark-read/';
+  String get base => '/patient/notifications/';
+  String detail(String id) => '/patient/notifications/$id/';
+  String markRead(String id) => '/patient/notifications/$id/mark-read/';
   String get pushDevices => '/notifications/push-devices/';
   String pushDeviceLastSeen(String id) =>
       '/notifications/push-devices/$id/last-seen/';

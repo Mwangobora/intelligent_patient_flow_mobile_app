@@ -68,8 +68,10 @@ class PatientNotification {
   final DateTime createdAt;
 
   bool get canMarkRead =>
-      channel == 'in_app' && status == PatientNotificationStatus.delivered;
-  bool get isUnread => canMarkRead && readAt == null;
+      channel == 'in_app' &&
+      readAt == null &&
+      status != PatientNotificationStatus.cancelled;
+  bool get isUnread => canMarkRead;
 
   factory PatientNotification.fromJson(Map<String, dynamic> json) {
     return PatientNotification(

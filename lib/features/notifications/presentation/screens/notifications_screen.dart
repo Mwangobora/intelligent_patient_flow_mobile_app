@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,6 +9,7 @@ import '../../../../shared/widgets/app_empty_state.dart';
 import '../../../../shared/widgets/app_error_state.dart';
 import '../../../../shared/widgets/app_loading_state.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../data/notification_realtime_service.dart';
 import '../widgets/notification_widgets.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
@@ -19,11 +22,19 @@ class NotificationsScreen extends ConsumerStatefulWidget {
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   String? _loadedPatientId;
+  StreamSubscription<NotificationRealtimeEvent>? _realtimeSubscription;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadIfReady());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _connectRealtime());
+  }
+
+  @override
+  void dispose() {
+    _realtimeSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -110,6 +121,30 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     }
     final profiles = ref.read(profileControllerProvider).patientProfiles;
     if (profiles.isNotEmpty) await _refresh(profiles.first.id);
+  }
+
+  Future<void> _connectRealtime() async {
+    if (_realtimeSubscription != null) return;
+    try {
+      final stream = await ref
+          .read(notificationRealtimeServiceProvider)
+          .connect();
+      _realtimeSubscription = stream.listen(
+        (event) {
+          final notification = event.notification;
+          if (notification == null) return;
+          ref
+              .read(notificationsControllerProvider.notifier)
+              .applyRealtimeNotification(notification);
+        },
+        onError: (_) {},
+        onDone: () {
+          _realtimeSubscription = null;
+        },
+      );
+    } catch (_) {
+      // The manual refresh path remains available if realtime is offline.
+    }
   }
 
   Future<void> _refresh(String patientId) async {

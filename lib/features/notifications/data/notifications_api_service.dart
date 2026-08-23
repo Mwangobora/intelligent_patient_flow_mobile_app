@@ -14,15 +14,13 @@ class NotificationsApiService {
   }) async {
     final response = await _apiClient.dio.get<dynamic>(
       ApiEndpoints.notifications.base,
-      queryParameters: {'patient_id': patientId},
+      queryParameters: {'unread_only': unreadOnly},
     );
     final notifications = asJsonList(response.data)
         .whereType<Map<String, dynamic>>()
         .map(PatientNotification.fromJson)
-        .where((item) => item.patientId == patientId)
         .toList();
-    if (!unreadOnly) return notifications;
-    return notifications.where((item) => item.isUnread).toList();
+    return notifications;
   }
 
   Future<PatientNotification> getNotification(String id) async {

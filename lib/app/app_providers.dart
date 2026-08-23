@@ -22,6 +22,7 @@ import '../features/checkin/data/checkin_repository_impl.dart';
 import '../features/checkin/domain/repositories/checkin_repository.dart';
 import '../features/checkin/presentation/controllers/checkin_controller.dart';
 import '../features/notifications/data/notifications_api_service.dart';
+import '../features/notifications/data/notification_realtime_service.dart';
 import '../features/notifications/data/notifications_repository_impl.dart';
 import '../features/notifications/domain/repositories/notifications_repository.dart';
 import '../features/notifications/presentation/controllers/notifications_controller.dart';
@@ -136,6 +137,11 @@ final notificationsRepositoryProvider = Provider<NotificationsRepository>((
     NotificationsApiService(ref.watch(apiClientProvider)),
   );
 });
+
+final notificationRealtimeServiceProvider =
+    Provider<NotificationRealtimeService>(
+      (ref) => NotificationRealtimeService(ref.watch(realtimeClientProvider)),
+    );
 
 final notificationsControllerProvider =
     StateNotifierProvider<NotificationsController, NotificationsState>((ref) {

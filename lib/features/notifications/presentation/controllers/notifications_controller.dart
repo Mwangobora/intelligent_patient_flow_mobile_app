@@ -124,4 +124,13 @@ class NotificationsController extends StateNotifier<NotificationsState> {
   void setUnreadOnly(bool value) {
     state = state.copyWith(showUnreadOnly: value, clearMessages: true);
   }
+
+  void applyRealtimeNotification(PatientNotification notification) {
+    final next = [
+      notification,
+      for (final item in state.notifications)
+        if (item.id != notification.id) item,
+    ]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    state = state.copyWith(notifications: next, clearMessages: true);
+  }
 }
