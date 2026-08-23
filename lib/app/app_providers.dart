@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/network/api_client.dart';
 import '../core/network/network_info.dart';
+import '../core/network/realtime_client.dart';
 import '../core/storage/secure_cookie_storage.dart';
 import '../core/storage/local_preferences_service.dart';
 import '../core/storage/secure_storage_service.dart';
@@ -52,6 +53,10 @@ final apiClientProvider = Provider<ApiClient>((ref) {
     networkInfo: ref.watch(networkInfoProvider),
     cookieJar: cookieJar,
   );
+});
+
+final realtimeClientProvider = Provider<RealtimeClient>((ref) {
+  return RealtimeClient(ref.watch(apiClientProvider));
 });
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {

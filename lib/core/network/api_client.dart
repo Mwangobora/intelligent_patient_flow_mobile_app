@@ -66,6 +66,11 @@ class ApiClient {
 
   Future<void> clearSession() => _cookieJar.deleteAll();
 
+  Future<String> cookieHeaderFor(Uri uri) async {
+    final cookies = await _cookieJar.loadForRequest(uri);
+    return cookies.map((cookie) => '${cookie.name}=${cookie.value}').join('; ');
+  }
+
   DioException _normalizeError(DioException error) {
     final data = error.response?.data;
     final message = _extractErrorMessage(error);
