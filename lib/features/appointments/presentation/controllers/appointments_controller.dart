@@ -407,8 +407,12 @@ class BookingController extends StateNotifier<BookingState> {
     final date = state.selectedDate;
     if (facility == null || specialty == null || date == null) return;
 
-    final startsFrom = DateTime(date.year, date.month, date.day);
-    final endsTo = startsFrom.add(const Duration(days: 1));
+    final selectedDayStart = DateTime(date.year, date.month, date.day);
+    final now = DateTime.now();
+    final startsFrom = _isSameDay(selectedDayStart, now)
+        ? now
+        : selectedDayStart;
+    final endsTo = selectedDayStart.add(const Duration(days: 1));
     state = state.copyWith(isLoading: true, clearError: true);
     final result = await repository.listAvailableSlots(
       facilityId: facility.id,
@@ -432,5 +436,11 @@ class BookingController extends StateNotifier<BookingState> {
       return 'You do not have access to appointment booking. Please sign in again or contact reception.';
     }
     return message;
+  }
+
+  bool _isSameDay(DateTime left, DateTime right) {
+    return left.year == right.year &&
+        left.month == right.month &&
+        left.day == right.day;
   }
 }

@@ -80,8 +80,10 @@ class Appointment {
       appointmentSlotId: json['appointment_slot'] as String?,
       slotStatus: json['slot_status'] as String?,
       appointmentNumber: json['appointment_number'] as String? ?? '',
-      scheduledStart: DateTime.parse(json['scheduled_start'] as String),
-      scheduledEnd: DateTime.parse(json['scheduled_end'] as String),
+      scheduledStart: DateTime.parse(
+        json['scheduled_start'] as String,
+      ).toLocal(),
+      scheduledEnd: DateTime.parse(json['scheduled_end'] as String).toLocal(),
       status: json['status'] as String? ?? AppointmentStatus.pending,
       bookingChannel: json['booking_channel'] as String? ?? 'mobile',
       rescheduledFromId: json['rescheduled_from'] as String?,
@@ -114,7 +116,7 @@ class AppointmentStatusEvent {
       fromStatus: json['from_status'] as String?,
       toStatus: json['to_status'] as String? ?? '',
       changeSource: json['change_source'] as String? ?? '',
-      changedAt: DateTime.parse(json['changed_at'] as String),
+      changedAt: DateTime.parse(json['changed_at'] as String).toLocal(),
       reason: json['reason'] as String?,
     );
   }
@@ -122,5 +124,5 @@ class AppointmentStatusEvent {
 
 DateTime? _parseDateTime(dynamic value) {
   if (value is! String || value.isEmpty) return null;
-  return DateTime.tryParse(value);
+  return DateTime.tryParse(value)?.toLocal();
 }

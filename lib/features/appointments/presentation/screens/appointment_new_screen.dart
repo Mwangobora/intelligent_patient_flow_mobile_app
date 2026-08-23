@@ -14,6 +14,7 @@ import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../data/models/booking_models.dart';
 import '../widgets/appointment_widgets.dart';
+import '../widgets/slot_picker.dart';
 
 class AppointmentNewScreen extends ConsumerStatefulWidget {
   const AppointmentNewScreen({this.rescheduleAppointmentId, super.key});
@@ -28,8 +29,12 @@ class AppointmentNewScreen extends ConsumerStatefulWidget {
 }
 
 class _AppointmentNewScreenState extends ConsumerState<AppointmentNewScreen> {
+  static const _slotPageSize = 8;
+
   final _reasonController = TextEditingController();
   bool _initialized = false;
+  SlotPeriod _slotPeriod = SlotPeriod.all;
+  int _visibleSlotCount = _slotPageSize;
 
   @override
   void initState() {
@@ -103,7 +108,10 @@ class _AppointmentNewScreenState extends ConsumerState<AppointmentNewScreen> {
                   ),
                 if (!widget.isReschedule) ...[
                   const BookingSectionTitle('1. Select facility'),
-                  _FacilitySelector(facilities: bookingState.facilities),
+                  _FacilitySelector(
+                    facilities: bookingState.facilities,
+                    onChanged: _resetSlotPicker,
+                  ),
                 ] else if (sourceAppointment != null) ...[
                   AppCard(
                     child: ListTile(
@@ -124,7 +132,10 @@ class _AppointmentNewScreenState extends ConsumerState<AppointmentNewScreen> {
                             sourceAppointment?.specialtyName ??
                             'Current service',
                       )
-                    : _SpecialtySelector(specialties: bookingState.specialties),
+                    : _SpecialtySelector(
+                        specialties: bookingState.specialties,
+                        onChanged: _resetSlotPicker,
+                      ),
                 const BookingSectionTitle('3. Select date'),
                 OutlinedButton.icon(
                   icon: const Icon(Icons.calendar_month_outlined),
@@ -144,6 +155,7 @@ class _AppointmentNewScreenState extends ConsumerState<AppointmentNewScreen> {
                       initialDate: bookingState.selectedDate ?? now,
                     );
                     if (picked != null) {
+                      _resetSlotPicker();
                       await ref
                           .read(bookingControllerProvider.notifier)
                           .selectDate(picked);
@@ -158,17 +170,25 @@ class _AppointmentNewScreenState extends ConsumerState<AppointmentNewScreen> {
                     child: Text('No available slots for the selected date.'),
                   )
                 else
-                  ...bookingState.slots.map(
-                    (slot) => Padding(
-                      padding: const EdgeInsets.only(bottom: AppSizes.sm),
-                      child: SlotCard(
-                        slot: slot,
-                        isSelected: bookingState.selectedSlot?.id == slot.id,
-                        onTap: () => ref
-                            .read(bookingControllerProvider.notifier)
-                            .selectSlot(slot),
-                      ),
-                    ),
+                  SlotPicker(
+                    slots: bookingState.slots,
+                    selectedSlot: bookingState.selectedSlot,
+                    selectedPeriod: _slotPeriod,
+                    visibleSlotCount: _visibleSlotCount,
+                    onPeriodChanged: (period) {
+                      setState(() {
+                        _slotPeriod = period;
+                        _visibleSlotCount = _slotPageSize;
+                      });
+                    },
+                    onShowMore: () {
+                      setState(() {
+                        _visibleSlotCount += _slotPageSize;
+                      });
+                    },
+                    onSlotSelected: (slot) => ref
+                        .read(bookingControllerProvider.notifier)
+                        .selectSlot(slot),
                   ),
                 const BookingSectionTitle('5. Confirm'),
                 AppTextField(
@@ -198,6 +218,13 @@ class _AppointmentNewScreenState extends ConsumerState<AppointmentNewScreen> {
         .loadFacilities(organizationId: patient?.organizationId);
   }
 
+  void _resetSlotPicker() {
+    setState(() {
+      _slotPeriod = SlotPeriod.all;
+      _visibleSlotCount = _slotPageSize;
+    });
+  }
+
   Future<void> _submit(String patientId) async {
     final controller = ref.read(bookingControllerProvider.notifier);
     final appointment = widget.isReschedule
@@ -219,9 +246,10 @@ class _AppointmentNewScreenState extends ConsumerState<AppointmentNewScreen> {
 }
 
 class _FacilitySelector extends ConsumerWidget {
-  const _FacilitySelector({required this.facilities});
+  const _FacilitySelector({required this.facilities, required this.onChanged});
 
   final List<FacilityOption> facilities;
+  final VoidCallback onChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -242,6 +270,7 @@ class _FacilitySelector extends ConsumerWidget {
           .toList(),
       onChanged: (id) {
         final facility = facilities.firstWhere((item) => item.id == id);
+        onChanged();
         ref.read(bookingControllerProvider.notifier).selectFacility(facility);
       },
     );
@@ -249,9 +278,13 @@ class _FacilitySelector extends ConsumerWidget {
 }
 
 class _SpecialtySelector extends ConsumerWidget {
-  const _SpecialtySelector({required this.specialties});
+  const _SpecialtySelector({
+    required this.specialties,
+    required this.onChanged,
+  });
 
   final List<FacilitySpecialtyOption> specialties;
+  final VoidCallback onChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -274,6 +307,7 @@ class _SpecialtySelector extends ConsumerWidget {
           .toList(),
       onChanged: (id) {
         final specialty = specialties.firstWhere((item) => item.id == id);
+        onChanged();
         ref.read(bookingControllerProvider.notifier).selectSpecialty(specialty);
       },
     );
