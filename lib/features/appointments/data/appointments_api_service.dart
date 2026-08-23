@@ -59,8 +59,8 @@ class AppointmentsApiService {
     final data = <String, String>{
       'facility_id': facilityId,
       'facility_specialty_id': facilitySpecialtyId,
-      'scheduled_start': scheduledStart.toIso8601String(),
-      'scheduled_end': scheduledEnd.toIso8601String(),
+      'scheduled_start': scheduledStart.toUtc().toIso8601String(),
+      'scheduled_end': scheduledEnd.toUtc().toIso8601String(),
       'booking_channel': 'mobile',
     };
     if (appointmentSlotId != null) {
@@ -96,8 +96,8 @@ class AppointmentsApiService {
     String? reasonForVisit,
   }) async {
     final data = <String, String>{
-      'scheduled_start': scheduledStart.toIso8601String(),
-      'scheduled_end': scheduledEnd.toIso8601String(),
+      'scheduled_start': scheduledStart.toUtc().toIso8601String(),
+      'scheduled_end': scheduledEnd.toUtc().toIso8601String(),
       'booking_channel': 'mobile',
     };
     if (appointmentSlotId != null) {
@@ -157,8 +157,8 @@ class AppointmentsApiService {
       queryParameters: {
         'facility_id': facilityId,
         'facility_specialty_id': facilitySpecialtyId,
-        'starts_from': startsFrom.toIso8601String(),
-        'ends_to': endsTo.toIso8601String(),
+        'starts_from': startsFrom.toUtc().toIso8601String(),
+        'ends_to': endsTo.toUtc().toIso8601String(),
         'only_available': 'true',
       },
     );
