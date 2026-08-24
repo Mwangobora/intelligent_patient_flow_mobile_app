@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../../../app/app_providers.dart';
 import '../../../../core/constants/app_sizes.dart';
@@ -23,14 +22,11 @@ class QueueScreen extends ConsumerStatefulWidget {
 
 class _QueueScreenState extends ConsumerState<QueueScreen> {
   Timer? _pollTimer;
-  StreamSubscription<dynamic>? _realtimeSubscription;
-  WebSocketChannel? _realtimeChannel;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _initialLoad());
-    WidgetsBinding.instance.addPostFrameCallback((_) => _connectRealtime());
     _pollTimer = Timer.periodic(
       const Duration(seconds: 12),
       (_) => _refresh(quiet: true),
@@ -40,8 +36,6 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
   @override
   void dispose() {
     _pollTimer?.cancel();
-    _realtimeSubscription?.cancel();
-    _realtimeChannel?.sink.close();
     super.dispose();
   }
 
@@ -101,22 +95,6 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
 
   void _initialLoad() {
     ref.read(queueControllerProvider.notifier).loadCurrentQueue();
-  }
-
-  Future<void> _connectRealtime() async {
-    try {
-      final channel = await ref
-          .read(realtimeClientProvider)
-          .connect('/ws/patient/queue/');
-      _realtimeChannel = channel;
-      _realtimeSubscription = channel.stream.listen(
-        (_) => _refresh(quiet: true),
-        onError: (_) {},
-        onDone: () {},
-      );
-    } catch (_) {
-      // Polling remains the safe fallback when realtime is unavailable.
-    }
   }
 
   Future<void> _refresh({bool quiet = false}) async {

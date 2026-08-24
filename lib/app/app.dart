@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app_providers.dart';
 import 'app_theme.dart';
+import 'patient_realtime_listener.dart';
 
 class PatientFlowApp extends ConsumerWidget {
   const PatientFlowApp({super.key});
@@ -16,6 +17,9 @@ class PatientFlowApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: router,
+      builder: (context, child) {
+        return PatientRealtimeListener(child: child ?? const SizedBox.shrink());
+      },
     );
   }
 }

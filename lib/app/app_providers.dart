@@ -31,6 +31,7 @@ import '../features/profile/data/profile_repository_impl.dart';
 import '../features/profile/domain/repositories/profile_repository.dart';
 import '../features/profile/presentation/controllers/profile_controller.dart';
 import '../features/queue/data/queue_api_service.dart';
+import '../features/queue/data/queue_realtime_service.dart';
 import '../features/queue/data/queue_repository_impl.dart';
 import '../features/queue/domain/repositories/queue_repository.dart';
 import '../features/queue/presentation/controllers/queue_controller.dart';
@@ -129,6 +130,10 @@ final queueControllerProvider =
     StateNotifierProvider<QueueController, QueueState>((ref) {
       return QueueController(repository: ref.watch(queueRepositoryProvider));
     });
+
+final queueRealtimeServiceProvider = Provider<QueueRealtimeService>(
+  (ref) => QueueRealtimeService(ref.watch(realtimeClientProvider)),
+);
 
 final notificationsRepositoryProvider = Provider<NotificationsRepository>((
   ref,

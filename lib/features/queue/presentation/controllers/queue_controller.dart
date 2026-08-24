@@ -32,11 +32,14 @@ class QueueState {
     DateTime? lastUpdatedAt,
     bool? isLoading,
     String? errorMessage,
+    bool clearSelectedEntry = false,
     bool clearError = false,
   }) {
     return QueueState(
       entries: entries ?? this.entries,
-      selectedEntry: selectedEntry ?? this.selectedEntry,
+      selectedEntry: clearSelectedEntry
+          ? null
+          : selectedEntry ?? this.selectedEntry,
       lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
@@ -70,6 +73,32 @@ class QueueController extends StateNotifier<QueueState> {
           errorMessage: _friendlyQueueError(message),
         );
     }
+  }
+
+  void applyRealtimeQueueEntry(QueueEntry? entry) {
+    if (entry == null) {
+      state = state.copyWith(
+        lastUpdatedAt: DateTime.now(),
+        clearSelectedEntry: true,
+        clearError: true,
+      );
+      return;
+    }
+
+    final existing = state.entries.where((item) => item.id == entry.id);
+    final nextEntries = existing.isEmpty
+        ? [entry, ...state.entries]
+        : [
+            for (final item in state.entries)
+              item.id == entry.id ? entry : item,
+          ];
+
+    state = state.copyWith(
+      entries: nextEntries,
+      selectedEntry: entry,
+      lastUpdatedAt: DateTime.now(),
+      clearError: true,
+    );
   }
 
   String _friendlyQueueError(String message) {
