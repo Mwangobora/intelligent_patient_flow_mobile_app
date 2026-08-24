@@ -103,8 +103,8 @@ class _CheckinScanScreenState extends ConsumerState<CheckinScanScreen> {
   }
 
   Future<void> _submitToken(String rawContent) async {
-    final token = _extractToken(rawContent);
-    if (token == null || token.isEmpty) {
+    final payload = _extractQrPayload(rawContent);
+    if (payload == null) {
       setState(() => _errorMessage = 'This QR code is not valid.');
       return;
     }
@@ -113,9 +113,10 @@ class _CheckinScanScreenState extends ConsumerState<CheckinScanScreen> {
       _errorMessage = null;
     });
     await _scannerController.stop();
-    final success = await ref
-        .read(checkinControllerProvider.notifier)
-        .consumeQrToken(token);
+    final controller = ref.read(checkinControllerProvider.notifier);
+    final success = payload.facilityId != null
+        ? await controller.consumeFacilityQr(payload.facilityId!)
+        : await controller.consumeQrToken(payload.token!);
     if (!mounted) return;
     final state = ref.read(checkinControllerProvider);
     setState(() {
@@ -134,25 +135,37 @@ class _CheckinScanScreenState extends ConsumerState<CheckinScanScreen> {
     await _scannerController.start();
   }
 
-  String? _extractToken(String rawContent) {
+  _QrScanPayload? _extractQrPayload(String rawContent) {
     final content = rawContent.trim();
     if (content.isEmpty) return null;
     final decoded = _tryDecodeTokenJson(content);
     if (decoded != null) return decoded;
     final uri = Uri.tryParse(content);
+    final facilityId =
+        uri?.queryParameters['facility_id'] ??
+        uri?.queryParameters['facilityId'];
+    if (facilityId != null && facilityId.trim().isNotEmpty) {
+      return _QrScanPayload.facility(facilityId.trim());
+    }
     final queryToken = uri?.queryParameters['token'];
     if (queryToken != null && queryToken.trim().isNotEmpty) {
-      return queryToken.trim();
+      return _QrScanPayload.token(queryToken.trim());
     }
-    return content;
+    return _QrScanPayload.token(content);
   }
 
-  String? _tryDecodeTokenJson(String content) {
+  _QrScanPayload? _tryDecodeTokenJson(String content) {
     try {
       final decoded = jsonDecode(content);
       if (decoded is Map<String, dynamic>) {
+        final facilityId = decoded['facility_id'] ?? decoded['facilityId'];
+        if (facilityId is String && facilityId.trim().isNotEmpty) {
+          return _QrScanPayload.facility(facilityId.trim());
+        }
         final value = decoded['token'] ?? decoded['code'];
-        if (value is String && value.trim().isNotEmpty) return value.trim();
+        if (value is String && value.trim().isNotEmpty) {
+          return _QrScanPayload.token(value.trim());
+        }
       }
     } catch (_) {
       return null;
@@ -199,6 +212,18 @@ class _CheckinScanScreenState extends ConsumerState<CheckinScanScreen> {
       ),
     );
   }
+}
+
+class _QrScanPayload {
+  const _QrScanPayload._({this.token, this.facilityId});
+
+  const _QrScanPayload.token(String token) : this._(token: token);
+
+  const _QrScanPayload.facility(String facilityId)
+    : this._(facilityId: facilityId);
+
+  final String? token;
+  final String? facilityId;
 }
 
 class _ScannerOverlay extends StatelessWidget {

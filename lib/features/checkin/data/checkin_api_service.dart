@@ -42,4 +42,14 @@ class CheckinApiService {
       response.data ?? <String, dynamic>{},
     );
   }
+
+  Future<AppointmentCheckinResult> consumeFacilityQr(String facilityId) async {
+    final response = await _apiClient.dio.post<Map<String, dynamic>>(
+      ApiEndpoints.checkins.patientFacilityQrConsume,
+      data: {'facility_id': facilityId},
+    );
+    return AppointmentCheckinResult.fromJson(
+      response.data ?? <String, dynamic>{},
+    );
+  }
 }

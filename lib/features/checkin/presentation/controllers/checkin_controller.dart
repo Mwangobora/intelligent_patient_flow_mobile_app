@@ -181,6 +181,30 @@ class CheckinController extends StateNotifier<CheckinState> {
     }
   }
 
+  Future<bool> consumeFacilityQr(String facilityId) async {
+    if (facilityId.trim().isEmpty) {
+      state = state.copyWith(errorMessage: 'This QR code is not valid.');
+      return false;
+    }
+    state = state.copyWith(isActionLoading: true, clearMessages: true);
+    final result = await repository.consumeFacilityQr(facilityId.trim());
+    switch (result) {
+      case ApiSuccess(data: final checkinResult):
+        state = state.copyWith(
+          checkins: [checkinResult.checkin, ...state.checkins],
+          isActionLoading: false,
+          successMessage: checkinResult.message,
+        );
+        return true;
+      case ApiFailure(message: final message):
+        state = state.copyWith(
+          isActionLoading: false,
+          errorMessage: _friendlyQrError(message),
+        );
+        return false;
+    }
+  }
+
   String _friendlyCheckinError(String message) {
     final normalized = message.toLowerCase();
     if (normalized.contains('too early') || normalized.contains('not open')) {

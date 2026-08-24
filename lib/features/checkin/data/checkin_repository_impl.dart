@@ -52,4 +52,15 @@ class CheckinRepositoryImpl implements CheckinRepository {
       return ApiResult.failure(ErrorMapper.fromObject(error).message);
     }
   }
+
+  @override
+  Future<ApiResult<AppointmentCheckinResult>> consumeFacilityQr(
+    String facilityId,
+  ) async {
+    try {
+      return ApiResult.success(await _apiService.consumeFacilityQr(facilityId));
+    } catch (error) {
+      return ApiResult.failure(ErrorMapper.fromObject(error).message);
+    }
+  }
 }

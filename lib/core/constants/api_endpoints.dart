@@ -58,6 +58,8 @@ class _CheckinEndpoints {
   String patientQrToken(String appointmentId) =>
       '/patient/checkins/appointments/$appointmentId/qr-token/';
   String get patientQrConsume => '/patient/checkins/qr/consume/';
+  String get patientFacilityQrConsume =>
+      '/patient/checkins/facility-qr/consume/';
 }
 
 class _QueueEndpoints {
