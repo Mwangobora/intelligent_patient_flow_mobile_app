@@ -34,59 +34,72 @@ class _CheckinScanScreenState extends ConsumerState<CheckinScanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Scan QR Code')),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      bottom: Radius.circular(AppSizes.radius),
-                    ),
-                    child: MobileScanner(
-                      controller: _scannerController,
-                      onDetect: _onDetect,
-                      errorBuilder: (context, error) =>
-                          _CameraPermissionView(onRetry: _restartScanner),
-                      overlayBuilder: (context, constraints) =>
-                          const _ScannerOverlay(),
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _goBack(context);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            tooltip: 'Back',
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => _goBack(context),
+          ),
+          title: const Text('Scan QR Code'),
+        ),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(AppSizes.radius),
+                      ),
+                      child: MobileScanner(
+                        controller: _scannerController,
+                        onDetect: _onDetect,
+                        errorBuilder: (context, error) =>
+                            _CameraPermissionView(onRetry: _restartScanner),
+                        overlayBuilder: (context, constraints) =>
+                            const _ScannerOverlay(),
+                      ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(AppSizes.lg),
-                  child: _ManualEntryCard(
-                    controller: _manualController,
-                    errorMessage: _errorMessage,
-                    isSubmitting: _isSubmitting,
-                    onSubmit: () => _submitToken(_manualController.text),
+                  Padding(
+                    padding: const EdgeInsets.all(AppSizes.lg),
+                    child: _ManualEntryCard(
+                      controller: _manualController,
+                      errorMessage: _errorMessage,
+                      isSubmitting: _isSubmitting,
+                      onSubmit: () => _submitToken(_manualController.text),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            if (_isSubmitting)
-              ColoredBox(
-                color: Colors.black.withValues(alpha: 0.35),
-                child: const Center(
-                  child: Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(AppSizes.lg),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircularProgressIndicator(),
-                          SizedBox(height: AppSizes.md),
-                          Text('Completing check-in...'),
-                        ],
+                ],
+              ),
+              if (_isSubmitting)
+                ColoredBox(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  child: const Center(
+                    child: Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(AppSizes.lg),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(height: AppSizes.md),
+                            Text('Completing check-in...'),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -133,6 +146,14 @@ class _CheckinScanScreenState extends ConsumerState<CheckinScanScreen> {
   Future<void> _restartScanner() async {
     setState(() => _errorMessage = null);
     await _scannerController.start();
+  }
+
+  void _goBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    context.go('/checkin');
   }
 
   _QrScanPayload? _extractQrPayload(String rawContent) {
