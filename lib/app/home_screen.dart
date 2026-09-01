@@ -15,7 +15,7 @@ class HomeScreen extends ConsumerWidget {
     final authState = ref.watch(authControllerProvider);
     final items = [
       ('Appointments', '/appointments', Icons.calendar_month_outlined),
-      ('Queue Status', '/queue', Icons.format_list_numbered),
+      ('Visit Status', '/queue', Icons.format_list_numbered),
       ('QR Check-in', '/checkin', Icons.qr_code_scanner),
       ('Notifications', '/notifications', Icons.notifications_outlined),
       ('Profile', '/profile', Icons.person_outline),
@@ -41,7 +41,7 @@ class HomeScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppSizes.sm),
           Text(
-            'Manage appointments, check-ins, queue updates, and hospital notifications.',
+            'Manage appointments, check-ins, visit updates, and hospital notifications.',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: AppSizes.xl),

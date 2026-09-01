@@ -61,7 +61,7 @@ class QueueHistoryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (entries.isEmpty) {
-      return const AppCard(child: Text('No queue history is available yet.'));
+      return const AppCard(child: Text('No visit history is available yet.'));
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -99,7 +99,7 @@ class _QueueInfoGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = [
       _InfoItem('Service point', entry.servicePointName ?? 'Not available'),
-      _InfoItem('People ahead', entry.queuePosition?.toString() ?? '—'),
+      _InfoItem('Patients ahead', entry.queuePosition?.toString() ?? '—'),
       _InfoItem(
         'Priority',
         entry.priorityLabel ?? _priorityLabel(entry.priorityLevel),
@@ -161,11 +161,11 @@ class _InfoItem {
 String _statusText(String status) {
   return switch (status) {
     QueueEntryStatus.waiting => 'You are waiting',
-    QueueEntryStatus.called => 'Please proceed to the service desk',
+    QueueEntryStatus.called => 'It is your turn',
     QueueEntryStatus.inService => 'You are being served',
     QueueEntryStatus.completed => 'Your visit is completed',
     QueueEntryStatus.skipped => 'You were skipped',
-    QueueEntryStatus.cancelled => 'Queue entry cancelled',
+    QueueEntryStatus.cancelled => 'Visit step cancelled',
     QueueEntryStatus.transferred => 'Transferred',
     _ => status,
   };
@@ -181,8 +181,8 @@ String _nextInstruction(QueueEntry entry) {
     QueueEntryStatus.cancelled =>
       'Please contact reception if this is unexpected.',
     QueueEntryStatus.transferred =>
-      'Please follow the updated queue instructions.',
-    _ => 'Please stay nearby and watch for your queue number.',
+      'Please follow the updated visit instructions.',
+    _ => 'Please stay nearby and watch for your number.',
   };
 }
 

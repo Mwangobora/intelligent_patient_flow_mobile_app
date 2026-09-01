@@ -128,7 +128,7 @@ const _destinations = [
   ),
   _NavigationItem(
     path: '/queue',
-    label: 'Queue',
+    label: 'Visit',
     icon: Icons.confirmation_num_outlined,
     selectedIcon: Icons.confirmation_num,
   ),

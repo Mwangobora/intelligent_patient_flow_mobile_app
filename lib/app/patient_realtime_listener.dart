@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 
 import '../features/auth/presentation/controllers/auth_controller.dart';
 import '../features/notifications/data/models/notification_models.dart';
@@ -105,6 +106,10 @@ class _PatientRealtimeListenerState
       ref.read(queueControllerProvider.notifier).loadCurrentQueue(quiet: true);
     }
 
+    if (_shouldAlertPatient(notification)) {
+      unawaited(SystemSound.play(SystemSoundType.alert));
+      unawaited(HapticFeedback.mediumImpact());
+    }
     _showMessage(_notificationMessage(notification));
   }
 
@@ -134,13 +139,16 @@ class _PatientRealtimeListenerState
 }
 
 String _notificationMessage(PatientNotification notification) {
+  final body = notification.body?.trim();
+  if (body != null && body.isNotEmpty) return body;
+
   return switch (notification.notificationType) {
     PatientNotificationType.queueCalled =>
-      'You have been called. Please proceed to reception.',
+      'It is your turn. Please proceed to the service area.',
     PatientNotificationType.queueUpdated =>
-      'Your queue has changed. Please check your next step.',
+      'Your hospital visit step has changed. Please check your next instruction.',
     PatientNotificationType.queueJoined =>
-      'You have been added to the hospital queue.',
+      'You are checked in. Please watch your number.',
     PatientNotificationType.appointmentReminder =>
       'You have an upcoming appointment reminder.',
     PatientNotificationType.appointmentCancelled =>
@@ -153,9 +161,16 @@ String _notificationMessage(PatientNotification notification) {
   };
 }
 
+bool _shouldAlertPatient(PatientNotification notification) {
+  return {
+    PatientNotificationType.queueCalled,
+    PatientNotificationType.queueUpdated,
+  }.contains(notification.notificationType);
+}
+
 String _queuePositionMessage(int? peopleAhead) {
-  if (peopleAhead == null) return 'Your queue position was updated.';
-  if (peopleAhead <= 0) return 'You are next in the queue.';
-  if (peopleAhead == 1) return 'Queue updated: 1 patient is in front of you.';
-  return 'Queue updated: $peopleAhead patients are in front of you.';
+  if (peopleAhead == null) return 'Your visit position has changed.';
+  if (peopleAhead <= 0) return 'You are next. Please stay nearby.';
+  if (peopleAhead == 1) return 'There is 1 patient ahead of you.';
+  return 'There are $peopleAhead patients ahead of you.';
 }

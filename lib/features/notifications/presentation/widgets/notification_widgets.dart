@@ -67,12 +67,16 @@ class NotificationListCard extends StatelessWidget {
   String get _title => notificationTitle(notification.notificationType);
 
   String get _subtitle {
+    final body = notification.body?.trim();
+    if (body != null && body.isNotEmpty) return body;
+
     return switch (notification.notificationType) {
       PatientNotificationType.queueCalled =>
-        'Your queue status has changed. Please check your queue screen.',
+        'It is your turn. Please proceed to the service area.',
       PatientNotificationType.queueJoined =>
-        'You have been added to a hospital queue.',
-      PatientNotificationType.queueUpdated => 'Your queue has an update.',
+        'You are checked in. Please watch your number.',
+      PatientNotificationType.queueUpdated =>
+        'Your hospital visit step has changed.',
       PatientNotificationType.appointmentReminder =>
         'You have an upcoming appointment reminder.',
       PatientNotificationType.appointmentCancelled =>
@@ -124,9 +128,9 @@ String notificationTitle(String value) {
     PatientNotificationType.appointmentReminder => 'Appointment reminder',
     PatientNotificationType.appointmentRescheduled => 'Appointment rescheduled',
     PatientNotificationType.appointmentCancelled => 'Appointment cancelled',
-    PatientNotificationType.queueJoined => 'Queue joined',
-    PatientNotificationType.queueUpdated => 'Queue updated',
-    PatientNotificationType.queueCalled => 'Queue called',
+    PatientNotificationType.queueJoined => 'Checked in',
+    PatientNotificationType.queueUpdated => 'Visit step updated',
+    PatientNotificationType.queueCalled => 'It is your turn',
     _ => 'General notification',
   };
 }

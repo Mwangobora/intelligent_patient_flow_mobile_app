@@ -45,6 +45,7 @@ class PatientNotification {
     this.failedAt,
     this.failureReason,
     this.providerMessageId,
+    this.body,
   });
 
   final String id;
@@ -65,6 +66,7 @@ class PatientNotification {
   final DateTime? failedAt;
   final String? failureReason;
   final String? providerMessageId;
+  final String? body;
   final DateTime createdAt;
 
   bool get canMarkRead =>
@@ -96,6 +98,7 @@ class PatientNotification {
       failedAt: parseOptionalDateTime(json['failed_at']),
       failureReason: json['failure_reason'] as String?,
       providerMessageId: json['provider_message_id'] as String?,
+      body: json['body'] as String?,
       createdAt: parseOptionalDateTime(json['created_at']) ?? DateTime.now(),
     );
   }

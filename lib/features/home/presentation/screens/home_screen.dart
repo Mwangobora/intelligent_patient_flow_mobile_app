@@ -242,8 +242,8 @@ class _PlaceholderCard extends StatelessWidget {
       child: ListTile(
         contentPadding: EdgeInsets.zero,
         leading: const Icon(Icons.format_list_numbered, color: AppColors.info),
-        title: const Text('Queue status'),
-        subtitle: const Text('View your current queue number and status.'),
+        title: const Text('Visit status'),
+        subtitle: const Text('View your current number and next step.'),
         trailing: const Icon(Icons.chevron_right),
         onTap: onTap,
       ),

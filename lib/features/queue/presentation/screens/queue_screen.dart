@@ -46,7 +46,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
     final entry = state.selectedEntry ?? state.currentEntry;
 
     return AppScaffold(
-      title: 'Queue Status',
+      title: 'Visit Status',
       showBottomNavigation: true,
       actions: [
         IconButton(
@@ -72,7 +72,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                     const AppEmptyState(
                       title: 'No active queue yet',
                       message:
-                          'After check-in, your queue number will appear here.',
+                          'After check-in, your visit number and next step will appear here.',
                     )
                   else ...[
                     QueueStatusCard(
@@ -81,7 +81,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                     ),
                     const SizedBox(height: AppSizes.lg),
                     Text(
-                      'Queue history',
+                      'Visit history',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: AppSizes.md),
